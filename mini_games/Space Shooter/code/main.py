@@ -3,8 +3,7 @@ from random import randint,uniform
 from os.path import join
 import os
 
-dir = 'D:\\code\\python vs code\\pyton Exercises\\PYTHON GAMES\\Space Shooter'
-os.chdir(dir)
+
 # import time
 
 class player (pygame.sprite.Sprite):
@@ -141,3 +140,110 @@ def get_highscore(score):
         highscore = score
     return highscore
 
+
+#screen Dimensions
+pygame.font.init()
+pygame.mixer.init()
+screen_width = 1280
+screen_height = 720
+#Creating Display
+gameWindow = pygame.display.set_mode((screen_width,screen_height))
+#time
+clock = pygame.time.Clock()
+pygame.display.set_caption('SPACE SHOOTER')
+
+exit_game = False
+game_over = False
+# Surface
+surf = pygame.Surface((100,150))
+surf.fill('orange')
+#Loading Images along with paths
+path_laser = join('images','laser.png') 
+path_meteor = join('images','meteor.png') 
+path_star = join('images','star.png')
+font_path = join('images','Oxanium-Bold.ttf')
+#music 
+laser_sound = pygame.mixer.Sound(join('audio','laser.wav'))
+gamemusic_sound = pygame.mixer.Sound(join('audio','game_music.wav'))
+explosion_sound = pygame.mixer.Sound(join('audio','explosion.wav'))
+damage_sound = pygame.mixer.Sound(join('audio','damage.ogg'))
+gamemusic_sound.set_volume(0.5)
+gamemusic_sound.play()
+
+explosion_frames = [pygame.image.load(join('images','explosion',f'{i}.png')).convert_alpha()for i in range(21)]
+laser_surf = pygame.image.load(f'{path_laser}').convert_alpha()
+meteor_surf = pygame.image.load(f'{path_meteor}').convert_alpha()
+star_surf = pygame.image.load(f'{path_star}').convert_alpha()
+font = pygame.font.Font(f'{font_path}', 30)
+all_sprites = pygame.sprite.Group()
+meteor_sprites = pygame.sprite.Group()
+laser_sprites = pygame.sprite.Group()
+for i in range(30):
+    stars = star(all_sprites,star_surf)
+player = player(all_sprites)
+#Custom Event == Meteor event
+meteor_event = pygame.event.custom_type() 
+pygame.time.set_timer(meteor_event, 500)
+
+
+while not exit_game:
+    dt = clock.tick()/1000
+    # score 
+    score = pygame.time.get_ticks() // 100
+    if game_over:
+        with open(join('code','highscore.txt'), 'w')as f :
+            f.write(str(highscore))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit_game = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    exit_game = True
+                if event.key == pygame.K_SPACE:
+                    game_over = False
+
+    else:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit_game = True
+            if event.type == meteor_event:
+                x,y = randint(0,screen_width), randint(-200,-100)
+                meteor(meteor_surf, (x, y), (all_sprites, meteor_sprites))
+        #player Movements
+        player.laser_cooldown()
+        keys = pygame.key.get_pressed()
+        separate_key = pygame.key.get_just_pressed()
+        # player.update(dt)
+        
+        
+
+        all_sprites.update(dt)
+        collision()
+    #Drawing the game
+        gameWindow.fill('#3a2e3f')
+        highscore = get_highscore(score)
+        display_score(highscore)
+        all_sprites.draw(gameWindow)
+
+        pygame.display.update()
+
+
+                
+
+
+
+        # Bouncing Back at Corners
+        # if int(player_rect.bottom) >= screen_height:
+        #     player_rect.bottom = screen_height
+        #     player_direction.y *= -1 
+        # elif int(player_rect.top) <= 0:
+        #     player_rect.top = 0
+        #     player_direction.y *= -1 
+        # elif int(player_rect.right) >= screen_width :
+        #     player_rect.right = screen_width
+        #     player_direction.x *= -1
+        # elif int(player_rect.left) <= 0:
+        #     player_rect.left = 0
+        #     player_direction.x *= -1
+
+        # player.movement(dt,keys,separate_key)
