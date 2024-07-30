@@ -240,3 +240,259 @@ class Castle():
         if pygame.mouse.get_pressed()[0] == False:
             self.fired = False
 
+def repair(self):
+        # If we have sufficient money and the castle is not at full health
+        if self.money >= 1500 and self.health < self.max_Health:
+            self.health = self.health + 500
+            if self.health > 999:
+                self.health = self.max_Health
+            self.money = self.money - 1500
+
+    def armour(self):
+        if self.money >= 1000:
+            self.max_Health = self.max_Health + 250
+            self.money = self.money - 1000
+
+
+class Enemy(pygame.sprite.Sprite):
+    # Constructor
+    def __init__(self, speed, health, animation_list, x, y,):
+        pygame.sprite.Sprite.__init__(self)
+        self.speed = speed
+        self.health = health
+        self.animation_list = animation_list
+        self.alive = True
+        self.action = 0 # walk: 0, attack: 1, death: 2
+        self.frame_index = 0
+
+        # The variable that records when we last switched costume
+        self.update_time = 0
+
+        # Select starting costume
+        # 2D list - animation_list = [ [walk], [attack], [death] ]
+        self.image = self.animation_list[self.action][self.frame_index]
+        self.rect = pygame.Rect(0, 0, 30, 50)
+        self.rect.center = (x, y)
+
+        self.death_cooldown_counter = 0
+        self.last_attack = 0
+
+
+    # Object/clone methods
+    def update(self, surface, target, bullet_group):
+        if self.alive:
+            # Check for collision with bullet clones
+            if pygame.sprite.spritecollide(self, bullet_group, True):
+                self.health = self.health - 25
+
+            # Move enemy - to shift hitbox to the right on each frame
+            if self.action == 0:
+                self.rect.x = self.rect.x + self.speed
+
+            # To attack and deal damage to the castle
+            if self.action == 1:
+                # Check If enough time has passed since the last attack
+                if pygame.time.get_ticks() - self.last_attack > 1000:
+                    target.health = target.health - 25
+
+                    if target.health <= 0:
+                        print("DIED")
+                        target.health = 0
+
+                    # Update the time stamp (self.last_attack)
+                    # Set self.last_attack to present time stamp
+                    self.last_attack = pygame.time.get_ticks()
+
+            # Check if enemy has reached the castle
+            if self.rect.right > target.rect.left:
+                #print("I've reached the Castle")
+                self.update_action(1)
+
+            # check if enemy's health has dropped to 0
+            if self.health <= 0:
+                target.money = target.money + 100
+                target.exp = target.exp + 1
+                self.update_action(2)
+                self.alive = False
+
+
+
+
+        self.update_animation()
+
+        # Draw the enemy clone and its hitbox
+        #pygame.draw.rect(surface, (0, 255, 0), self.rect, 5)
+        surface.blit(self.image, (self.rect.x - 80, self.rect.y - 20))
+
+
+    def update_animation(self):
+
+        # Define animation cooldown
+        ANIMATION_COOLDOWN = 30
+
+        DEATH_COOLDOWN = random.randint(350, 700)
+        self.death_cooldown_counter = self.death_cooldown_counter + 1
+
+        # Update costume as per the frame index (costume number)
+        self.image = self.animation_list[self.action][self.frame_index]
+
+        # Check if enough time has passed since we last changed costume
+        if pygame.time.get_ticks() - self.update_time > ANIMATION_COOLDOWN:
+            self.frame_index = self.frame_index + 1
+            self.update_time = pygame.time.get_ticks()
+
+        # If the animation has run out then reset it
+        if self.frame_index >= 9:
+            if self.action == 2:
+                self.frame_index = 9
+
+                # Check if enough time has passed before we delete a dead body
+                if self.death_cooldown_counter >= DEATH_COOLDOWN:
+                    self.kill()
+            else:
+                self.frame_index = 0
+
+
+    def update_action(self, new_action):
+        # Check if the new action is different than the current action
+        if new_action != self.action:
+            self.action = new_action
+
+            # reset frame_index to 0 whenever it switches action
+            self.frame_index = 0
+
+            # Update time stamp
+            self.update_time = pygame.time.get_ticks()
+
+
+# Create a bullet group(list)
+bullet_group = pygame.sprite.Group()
+
+# Create a castle clone
+castle1 = Castle(image100, image60, image30,  900, 800, 1.2)
+# 750, 780, 1
+
+# Create an enemy group (list)
+enemy_group = pygame.sprite.Group()
+
+# Load Button images
+repair_img = pygame.image.load("PygameAssets/utility/download-removebg-preview (6).png")
+armour_img = pygame.image.load("PygameAssets/utility/download-removebg-preview (7).png")
+
+# Create two button clones
+
+
+repair_button = Button(0, 0, repair_img, 0.2)
+armour_button = Button(250, 0, armour_img, 0.2)
+
+# MAIN GAME LOOP
+
+run = True
+while run:
+
+    # clock.tick(60)
+
+    # Paint the bg
+    screen.blit(bg, (0, 0))
+
+    if repair_button.draw(screen) == True:
+        print("repair button is pressed")
+        castle1.repair()
+
+    if armour_button.draw(screen) == True:
+        print("armour button is pressed")
+        castle1.armour()
+
+    # Paint the castle clones
+    castle1.Draw()
+    castle1.shoot()
+
+
+    # Draw bullet clones
+    bullet_group.update()
+    bullet_group.draw(screen)
+
+    # Set up HUD -> Heads Up Display                                    x   y
+    draw_text("Money: $" + str(castle1.money), Font_HUD, (0, 255, 30), 900, 580)
+    draw_text("Exp: " + str(castle1.exp), Font_HUD, (255, 205, 0), 900, 540)
+    draw_text("Wave: " + str(Wave), Font_HUD, (255, 0, 0), 900, 500)
+    draw_text(str(castle1.health) + '/' + str(castle1.max_Health), Font_HUD, (0,255, 0), 10, 50)
+
+
+    if castle1.health > 0:
+
+        # Health bar bg
+        health_rect_max = pygame.Rect(850, 780, (castle1.max_Health / 4), 35)
+        pygame.draw.rect(screen, (0, 0, 0), health_rect_max)
+
+        # Figure out the color
+        if castle1.health > 600:
+            color = (0, 255, 0)
+        elif 300 <= castle1.health <= 600:
+            color = (255, 255, 0)
+        else:
+            color = (255, 0, 0)
+
+        # Green overlay
+        health_rect = pygame.Rect(850, 780, castle1.health / 4, 35)
+        pygame.draw.rect(screen, color, health_rect)
+
+        draw_text("Health: " + str(castle1.health), Font_HUD, (0, 170, 20), 850, 780)
+    else:
+        draw_text("YOU LOST!", Font_HUD, (255, 0, 0) , 850, 780)
+
+    # Create if the target difficulty has been reached
+    # Create an enemy clone in the main game loop
+    if Wave_difficulty < Target_difficulty:
+
+        # Check if enough time has lapsed since we last cloned an enemy
+        if pygame.time.get_ticks() - last_enemy > ENEMY_TIMER:
+            ARandomKnight = random.randint(0, 2)
+            ARandomSpeed = random.randint(1, random.randint(3, 5))
+            enemy = Enemy(ARandomSpeed, 100, master_enemy_animation[ARandomKnight], 50, SCREEN_HEIGHT - 50)
+
+            # Update last_enemy (put a stamp when we create an enemy clone)
+            last_enemy = pygame.time.get_ticks()
+
+            enemy_group.add(enemy)
+
+            # Increase wave difficulty by enemy health
+            Wave_difficulty += 100
+
+    # Check if all the enemies of a wave have been spawned
+    if Wave_difficulty >= Target_difficulty:
+        # Check how many enemy clones are still alive
+        Enemies_alive = 0
+        for e in enemy_group:
+            if e.alive == True:
+                Enemies_alive += 1
+        # Proceed to the next wave if there is no more enemies alive from the previous wave
+        if Enemies_alive == 0 and Next_wave == False:
+            Next_wave = True
+            Level_reset_time = pygame.time.get_ticks()  # Register current time stamp as soon as the wave has been completed
+
+    # Move on to the next wave
+    if Next_wave == True:
+        draw_text('Wave ' + str(Wave) + ' Completed', Font_HUD, (0, 170, 0), 450, 500)
+        # Check if sufficient time has passed since we cleared the wave.
+        if pygame.time.get_ticks() - Level_reset_time > 5000:
+            Next_wave = False
+            Wave = Wave + 1
+
+            # Reset enemy spawning parameters
+            Last_enemy = pygame.time.get_ticks()
+            Wave_difficulty = 0
+            Target_difficulty *= Difficulty_multiplier
+            enemy_group.empty()
+
+
+    enemy_group.update(screen, castle1, bullet_group)
+
+    # Event handler
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+    # Update display window ( Refresh the Main Game Screen )
+    pygame.display.update()
+
+pygame.quit()
