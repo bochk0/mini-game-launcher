@@ -238,3 +238,183 @@ def catch_fish(current_rod, inventory, fish_list, window, balance):
                         display_fish = pygame.image.load(os.path.join("textures", "fish_images", f"_{fish.lower()}.png"))
                         display_fish_image = display_fish.get_rect(center=(330, 22))
                         window.blit(display_fish, (display_fish_image))
+                        except FileNotFoundError:
+                        display_blank = pygame.image.load(os.path.join("textures", "fish_images", "_blank.png"))
+                        display_blank_image = display_blank.get_rect(center=(330, 22))
+                        window.blit(display_blank, (display_blank_image))
+                    refresh_window(window, balance, current_rod, circle_x, circle_y, radius)
+                    pygame.display.update()
+                    time.sleep(1)
+                    return current_rod, inventory, fish_list
+                    
+                else:
+                    break
+            else:
+                pass
+
+def show_inventory(inventory, window):
+
+    def draw_text(text, font, text_col, x, y):
+        img = font.render(text, True, text_col)
+        window.blit(img, (x, y))
+    text_font = pygame.font.Font(os.path.join("textures", "pixellari.ttf"),16)
+
+    if len(inventory) == 0:
+        pygame.display.update()
+    else:
+        pygame.event.clear()
+        while True:
+            pygame.display.update()
+            event = pygame.event.wait()
+            text_y = 5
+            rect_y = 5
+            pygame.draw.rect(window, (0, 0, 0), (595, 5, 200, 17))
+            draw_text("Your fish:", text_font, (255, 254, 255), 600, 5)
+
+            for key, value in inventory.items():
+                text_y += 15
+                rect_y += 15
+                pygame.draw.rect(window, (0, 0, 0), (595, rect_y, 200, 15))
+                draw_text(f"{key} {round(value[0], 1)}kg (${round(value[1])})", text_font, (255, 254, 255), 625, text_y)
+
+                try:
+                    display_fish = pygame.image.load(os.path.join("textures", "fish_images", f"_{key.lower()}.png"))
+                    display_fish_image = display_fish.get_rect(center=(610, text_y + 6))
+                    window.blit(display_fish, (display_fish_image))
+                except FileNotFoundError:
+                    display_blank = pygame.image.load(os.path.join("textures", "fish_images", "_blank.png"))
+                    display_blank_image = display_blank.get_rect(center=(610, text_y + 6))
+                    window.blit(display_blank, (display_blank_image))
+
+            if event.type == MOUSEBUTTONDOWN:
+                break
+
+            elif event.type == pygame.QUIT:
+                pygame.quit()
+
+            pygame.display.update()
+
+def sell(balance, inventory, window):
+
+    def draw_text(text, font, text_col, x, y):
+        img = font.render(text, True, text_col)
+        window.blit(img, (x, y))
+    text_font = pygame.font.Font(os.path.join("textures", "pixellari.ttf"),16)
+
+    if len(inventory) == 0:
+        draw_text("You have no fish to sell", text_font, (255, 254, 255), 320, 15)
+        pygame.display.update()
+        time.sleep(1)
+
+    else:
+        for value in inventory.values():
+            balance["Coins"] += round(value[1])
+        dict.clear(inventory)
+        draw_text(f"All fish sold!", text_font, (255, 254, 255), 365, 15)
+        pygame.display.update()
+        time.sleep(1)
+    return balance, inventory
+
+def shop(balance, current_rod, rods_list, window):
+
+    def draw_text(text, font, text_col, x, y):
+        img = font.render(text, True, text_col)
+        window.blit(img, (x, y))
+    text_font = pygame.font.Font(os.path.join("textures", "pixellari.ttf"),16)
+
+    selected_rod = []
+    for value in balance.values():
+        pygame.draw.rect(window, (0, 0, 0), (580, 5, 215, 17))
+        draw_text(f"Balance: ${value}", text_font, (255, 254, 255), 585, 5)
+    text_y = 5
+    rect_y = 5
+
+    for rod in rods_list:
+        text_y += 15
+        rect_y += 15
+        pygame.draw.rect(window, (0, 0, 0), (580, rect_y, 215, 17))
+        draw_text(f"{rod[3]} - {rod[0]}: (${rod[2]})", text_font, (255, 254, 255), 585, text_y)
+    pygame.event.clear()
+
+    while True:
+        try:
+            pygame.display.update()
+            event = pygame.event.wait()
+            key = pygame.key.get_pressed()
+            if event.type == KEYDOWN:
+                if key[pygame.K_0] == True:
+                    break
+                else:
+                    selected_rod = rods_list[int(event.key) - 49]
+                    pygame.draw.rect(window, (0, 0, 0), (580, rect_y + 17, 215, 51))
+                    draw_text(f"Selected rod - {selected_rod[0]}", text_font, (255, 254, 255), 585, text_y + 17)
+                    draw_text(f"Durability: {selected_rod[1]}     Luck: {selected_rod[4]}", text_font, (255, 254, 255), 585, text_y + 34)
+                    draw_text(f"Press Enter to purchase", text_font, (255, 254, 255), 585, text_y + 51)
+            elif event.type == pygame.QUIT:
+                pygame.quit()
+            elif event.type == MOUSEBUTTONDOWN:
+                break
+
+        except IndexError:
+            try:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                elif event.type == KEYDOWN:
+                    if key[pygame.K_RETURN] == True:
+                        if int(balance.get("Coins")) >= int(selected_rod[2]):
+                            balance["Coins"] -= int(selected_rod[2])
+                            dict.clear(current_rod)
+                            current_rod[selected_rod[0]] = [selected_rod[1], int(selected_rod[1]), int(selected_rod[4])]
+                            draw_text(f"You bought a {selected_rod[0]}!", text_font, (255, 254, 255), 300, 15)
+                            pygame.display.update()
+                            time.sleep(1)
+                            return balance, current_rod
+                        else:
+                            draw_text("Not enough money!", text_font, (255, 254, 255), 300, 17)
+                            pygame.display.update()
+                            time.sleep(1)
+                            break
+            except IndexError:
+                pass
+
+def show_help(window):
+
+    def draw_text(text, font, text_col, x, y):
+        img = font.render(text, True, text_col)
+        window.blit(img, (x, y))
+    text_font = pygame.font.Font(os.path.join("textures", "pixellari.ttf"),16)
+    
+    pygame.event.clear()
+    while True:
+        pygame.display.update()
+        event = pygame.event.wait()
+        if event.type == MOUSEBUTTONDOWN:
+            break
+        elif event.type == pygame.QUIT:
+                pygame.quit()
+        else:
+            pygame.draw.rect(window, (0, 0, 0), (455, 450, 110, 36))
+            pygame.draw.line(window, (0, 0, 0), (475, 450), (475, 425))
+            draw_text(f"Click here to", text_font, (255, 254, 255), 458, 454)
+            draw_text(f"view your fish", text_font, (255, 254, 255), 459, 468)
+
+            pygame.draw.rect(window, (0, 0, 0), (280, 285, 103, 36))
+            pygame.draw.line(window, (0, 0, 0), (300, 351), (300, 290))
+            draw_text(f"Click here to", text_font, (255, 254, 255), 283, 289)
+            draw_text(f"sell your fish", text_font, (255, 254, 255), 284, 303)
+
+            pygame.draw.rect(window, (0, 0, 0), (230, 50, 123, 36))
+            pygame.draw.line(window, (0, 0, 0), (208, 59), (230, 59))
+            draw_text(f"Click here to", text_font, (255, 254, 255), 232, 54)
+            draw_text(f"buy fishing rods", text_font, (255, 254, 255), 233, 68)
+
+            pygame.draw.rect(window, (0, 0, 0), (550, 200, 228, 68))
+            pygame.draw.line(window, (0, 0, 0), (565, 200), (565, 290))
+            draw_text(f"Click the water to start fishing,", text_font, (255, 254, 255), 554, 204)
+            draw_text(f"keep your cursor within the", text_font, (255, 254, 255), 556, 219)
+            draw_text(f"white circle until the fish gets", text_font, (255, 254, 255), 555, 234)
+            draw_text(f"tired out. Good luck!", text_font, (255, 254, 255), 555, 249)
+
+if __name__ == "__main__":
+    os.system("cls")
+    print("You ran functions.py, please run game.py")
