@@ -622,23 +622,6 @@ def CalculateNextBotBet():
             print(f"bot {whoseTurn} with strength {botHandStrength} RAISED by 3.5x with chance {chance}") 
             return 3.5 
     
-    elif botHandStrength == 8:
-        chance = ReturnPercentageInteger()
-        if chance >= 10: 
-            print(f"bot {whoseTurn} with strength {botHandStrength} RAISED by 4.5x with chance {chance}") 
-            return 4.5
-        else: 
-            print(f"bot {whoseTurn} with strength {botHandStrength} RAISED by 4.0x with chance {chance}") 
-            return 4.0 
-    
-    elif botHandStrength == 9:
-        chance = ReturnPercentageInteger()
-        if chance >= 5: 
-            print(f"bot {whoseTurn} with strength {botHandStrength} RAISED by 5.0x with chance {chance}") 
-            return 5.0
-        else: 
-            print(f"bot {whoseTurn} with strength {botHandStrength} RAISED by 4.0x with chance {chance}") 
-            return 4.0 
 
 def MakeBotBet(TxPot, FrScrollableText):
     global lastBet
@@ -692,3 +675,215 @@ def GetSuitOfCardOneAndTwo(firstChosenCard, secondChosenCard):
         secondChosenCardSuit = "diamonds"
 
     return firstChosenCardSuit, secondChosenCardSuit
+    def CommitCombine(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, 
+                TxPlayerCoins, TxPot, cardButtons, communityCardList):
+    global showingCombineMenu, roundSixExecuted
+
+    playerHand.remove(firstChosenCard) 
+    playerHand.remove(secondChosenCard) 
+    playerHand.append(cardImagePNGtext) 
+
+    cardButtons[cardTwo].image = "" 
+
+    
+    cardImageFile = Image.open(f"Playing Cards/{cardImagePNGtext}")
+    resizedCardImageFile = cardImageFile.resize((114, 164), Image.LANCZOS)
+    actualCardImage = ImageTk.PhotoImage(resizedCardImageFile)
+    
+
+    
+    cardButtons[cardOne].image = actualCardImage
+    cardButtons[cardOne].config(image=actualCardImage)
+    
+
+    UpdatePlayerCardButtonsWithList(cardButtons)
+
+    ClearWindowOrFrame(FrCommandPanelExtension)
+    showingCombineMenu = False
+
+    print("PLAYER combined cards")
+    IncreaseWhoseTurn()
+    if currentRound == 6:
+        ExecuteRoundSix(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, 
+                        TxPlayerCoins, TxPot, cardButtons, communityCardList)
+    elif currentRound == 9:
+        ExecuteRoundNine(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, 
+                        TxPlayerCoins, TxPot, cardButtons, communityCardList)
+
+def SelectTwoCardsToCombine(EnCardOne, EnCardTwo, EnOperation, TxResultCard, BtCommitCombine):
+    global cardImagePNGtext, cardOne, cardTwo, firstChosenCard, secondChosenCard
+
+    cardOne = EnCardOne.get()
+    cardOne = int(cardOne) - 1
+    cardTwo = EnCardTwo.get()
+    cardTwo = int(cardTwo) - 1
+    operation = EnOperation.get()
+
+    firstChosenCard = playerHand[cardOne]
+    secondChosenCard = playerHand[cardTwo]
+
+    firstChosenCardSuit, secondChosenCardSuit = GetSuitOfCardOneAndTwo(firstChosenCard, secondChosenCard)
+
+    valuesInPlayerHand = MakeHandIntoListOfValues(playerHand)
+    biggerCardOfTheTwo = max(valuesInPlayerHand[cardOne], valuesInPlayerHand[cardTwo])
+    smallerCardOfTheTwo = min(valuesInPlayerHand[cardOne], valuesInPlayerHand[cardTwo])
+
+    if operation == "+" and valuesInPlayerHand[cardOne] + valuesInPlayerHand[cardTwo] < 15:
+        number = valuesInPlayerHand[cardOne] + valuesInPlayerHand[cardTwo]
+
+    elif operation == "-" and biggerCardOfTheTwo - smallerCardOfTheTwo > 0:
+        number = biggerCardOfTheTwo - smallerCardOfTheTwo
+
+    elif operation == "*" and valuesInPlayerHand[cardOne] * valuesInPlayerHand[cardTwo] < 15:
+        number = valuesInPlayerHand[cardOne] * valuesInPlayerHand[cardTwo]
+
+    elif operation == "/" and str((biggerCardOfTheTwo / smallerCardOfTheTwo))[-2:] == ".0":
+        number = round(biggerCardOfTheTwo / smallerCardOfTheTwo)
+
+    try: 
+        if valuesInPlayerHand[cardOne] >= valuesInPlayerHand[cardTwo]: 
+            
+            cardImagePNGtext = f"{number}_of_{firstChosenCardSuit}.png" 
+            
+        elif valuesInPlayerHand[cardOne] <= valuesInPlayerHand[cardTwo]: 
+            cardImagePNGtext = f"{number}_of_{secondChosenCardSuit}.png" 
+
+        
+        cardImageFile = Image.open(f"Playing Cards/{cardImagePNGtext}")
+        resizedCardImageFile = cardImageFile.resize((45, 70), Image.LANCZOS)
+        actualCardImage = ImageTk.PhotoImage(resizedCardImageFile)
+        
+
+        
+        TxResultCard.image = actualCardImage
+        TxResultCard.config(image=actualCardImage)
+        
+        BtCommitCombine["state"] = "normal"
+    except: 
+        print("error occurred creating image for result card")
+        BtCommitCombine["state"] = "disabled"
+
+def ShowCombineMenu(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, 
+                    TxPlayerCoins, TxPot, cardButtons, communityCardList):
+    global showingCombineMenu
+
+    if showingCombineMenu:
+        ClearWindowOrFrame(FrCommandPanelExtension)
+        showingCombineMenu = False
+    else:   
+        showingCombineMenu = True
+
+        TxResult = Label(FrCommandPanelExtension, text="RESULT", font=("Rockwell", 12), background="dark grey")
+        TxResult.place(x=30,y=75)
+
+        TxCardOne = Label(FrCommandPanelExtension, text="CARD 1", font=("Rockwell", 8), background="dark grey")
+        TxCardOne.place(x=15,y=5)
+
+        TxCardTwo = Label(FrCommandPanelExtension, text="CARD 2", font=("Rockwell", 8), background="dark grey")
+        TxCardTwo.place(x=85,y=5)
+
+        TxOperation = Label(FrCommandPanelExtension, text="MATH OPERATION", font=("Rockwell", 8), background="dark grey")
+        TxOperation.place(x=15,y=30)
+        
+        EnCardOne = Entry(FrCommandPanelExtension, width=2)
+        EnCardOne.place(x=0,y=5)
+        
+        EnCardTwo = Entry(FrCommandPanelExtension, width=2)
+        EnCardTwo.place(x=70,y=5)
+
+        EnOperation = Entry(FrCommandPanelExtension, width=2)
+        EnOperation.place(x=0,y=30)
+
+        TxResultCard = Label(FrCommandPanelExtension, borderwidth=0)
+        TxResultCard.place(x=40,y=100)
+
+        BtCheckCombination = Button(FrCommandPanelExtension, text="CHECK COMBINATION", font=("Rockwell", 9),
+                            compound="c", image=pixel, height=15, width=130, borderwidth=0, 
+                            command=lambda:SelectTwoCardsToCombine(EnCardOne, EnCardTwo, EnOperation, TxResultCard, BtCommitCombine))
+        BtCheckCombination.place(x=0,y=55)
+
+        BtCommitCombine = Button(FrCommandPanelExtension, text="COMBINE", font=("Rockwell", 10),
+                            compound="c", image=pixel, height=15, width=115, borderwidth=0, 
+                            command=lambda:CommitCombine(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, 
+                                                        FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList))
+        BtCommitCombine.place(x=0,y=175)
+        BtCommitCombine["state"] = "disabled" 
+
+
+def TryCombiningIntoFourOfAKind(botHandValues, valueOfPairOrKind):
+    
+    newCardCreated = False
+
+    currentBotHand = allBotHands[whoseTurn - 1]
+    print(f"before removing targets trying to combine into 4 of a kind: {botHandValues}\n current bot hand {currentBotHand}")
+    target = valueOfPairOrKind 
+
+    if len(communityHand) == 3:
+
+        if (botHandValues[0] == target and botHandValues[1] == target and botHandValues[2] == target): 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            situation = 1
+
+        elif (botHandValues[0] == target and botHandValues[1] == target): 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
+            currentBotHand.pop(botHandValues.index(target)) 
+            botHandValues.remove(target) 
+            situation = 2
+
+        elif (botHandValues[1] == target and botHandValues[2] == target): 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
+            currentBotHand.pop(botHandValues.index(target)) 
+            botHandValues.remove(target) 
+            situation = 2
+
+        elif (botHandValues[0] == target and botHandValues[2] == target): 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
+            currentBotHand.pop(botHandValues.index(target)) 
+            botHandValues.remove(target) 
+            situation = 2
+
+        elif botHandValues.index(target) == 0 or botHandValues.index(target) == 1 or botHandValues.index(target) == 2: 
+            
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
+            currentBotHand.pop(botHandValues.index(target)) 
+            currentBotHand.pop(botHandValues.index(target)) 
+            botHandValues.remove(target) 
+            botHandValues.remove(target) 
+            situation = 3
+        
+        elif botHandValues.index(target) > 2: 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
+            currentBotHand.pop(botHandValues.index(target)) 
+            currentBotHand.pop(botHandValues.index(target)) 
+            currentBotHand.pop(botHandValues.index(target)) 
+            botHandValues.remove(target) 
+            botHandValues.remove(target) 
+            botHandValues.remove(target) 
+            situation = 4
+
+    elif len(communityHand) == 2:
+
+        if botHandValues[0] == target and botHandValues[1] == target: 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
+            currentBotHand.pop(botHandValues.index(target)) 
+            botHandValues.remove(target) 
+            situation = 2
