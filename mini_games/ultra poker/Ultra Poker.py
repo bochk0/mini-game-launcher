@@ -887,3 +887,227 @@ def TryCombiningIntoFourOfAKind(botHandValues, valueOfPairOrKind):
             currentBotHand.pop(botHandValues.index(target)) 
             botHandValues.remove(target) 
             situation = 2
+            
+    elif botHandValues.index(target) == 0 or botHandValues.index(target) == 1: 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
+            currentBotHand.pop(botHandValues.index(target)) 
+            currentBotHand.pop(botHandValues.index(target)) 
+            botHandValues.remove(target) 
+            botHandValues.remove(target) 
+            situation = 3
+
+    print(f"situation: {situation}. after removing targets trying to combine into 4 of a kind: {botHandValues}\n current bot hand {currentBotHand}")
+
+    for index in range(len(botHandValues)): 
+        firstChosenCard = currentBotHand[index - 1] 
+        secondChosenCard = currentBotHand[index] 
+
+        print(botHandValues[index - 1], botHandValues[index], index)
+        
+        if botHandValues[index - 1] + botHandValues[index] == target: 
+
+            firstChosenCardSuit, secondChosenCardSuit = GetSuitOfCardOneAndTwo(firstChosenCard, secondChosenCard)
+
+            print(f"{botHandValues[index - 1]} of {firstChosenCardSuit} + {botHandValues[index]} of {secondChosenCardSuit} = {target}")
+
+            if botHandValues[index - 1] >= botHandValues[index]: 
+                print(f"{target}_of_{firstChosenCardSuit}.png = resulting card") 
+                resultingCard = f"{target}_of_{firstChosenCardSuit}.png"
+
+                print(f"{botHandValues[index - 1]}_of_{firstChosenCardSuit}.png")
+
+                currentBotHand.remove(f"{botHandValues[index - 1]}_of_{firstChosenCardSuit}.png")
+                currentBotHand.remove(f"{botHandValues[index]}_of_{secondChosenCardSuit}.png")
+
+                currentBotHand.append(resultingCard)  
+
+                if situation == 2: 
+                    currentBotHand.append(targetInCurrentBotHand) 
+                elif situation == 3: 
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                elif situation == 4:
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+
+                newCardCreated = True
+                break
+
+            elif botHandValues[index - 1] <= botHandValues[index]: 
+                print(f"{target}_of_{secondChosenCardSuit}.png = resulting card") 
+                resultingCard = f"{target}_of_{secondChosenCardSuit}.png"
+
+                currentBotHand.remove(f"{botHandValues[index]}_of_{secondChosenCardSuit}.png")
+                currentBotHand.remove(f"{botHandValues[index-1]}_of_{firstChosenCardSuit}.png") 
+                currentBotHand.append(resultingCard) 
+
+                if situation == 2:
+                    currentBotHand.append(targetInCurrentBotHand) 
+                elif situation == 3:
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                elif situation == 4:
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                    
+                newCardCreated = True
+                break
+
+        elif botHandValues[index - 1] * botHandValues[index] == target:
+            firstChosenCardSuit, secondChosenCardSuit = GetSuitOfCardOneAndTwo(firstChosenCard, secondChosenCard)
+
+            print(f"{botHandValues[index - 1]} of {firstChosenCardSuit} * {botHandValues[index]} of {secondChosenCardSuit} = {target}")
+
+            if botHandValues[index - 1] >= botHandValues[index]: 
+                print(f"{target}_of_{firstChosenCardSuit}.png = resulting card") 
+                resultingCard = f"{target}_of_{firstChosenCardSuit}.png"
+
+                currentBotHand.remove(f"{botHandValues[index - 1]}_of_{firstChosenCardSuit}.png")
+                currentBotHand.remove(f"{botHandValues[index]}_of_{secondChosenCardSuit}.png")
+                currentBotHand.append(resultingCard)  
+
+                if situation == 2: 
+                    currentBotHand.append(targetInCurrentBotHand) 
+                elif situation == 3: 
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                elif situation == 4:
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                    
+                newCardCreated = True
+                break
+
+            elif botHandValues[index - 1] <= botHandValues[index]: 
+                print(f"{target}_of_{secondChosenCardSuit}.png = resulting card") 
+                resultingCard = f"{target}_of_{secondChosenCardSuit}.png"
+
+                currentBotHand.remove(f"{botHandValues[index]}_of_{secondChosenCardSuit}.png")
+                currentBotHand.remove(f"{botHandValues[index-1]}_of_{firstChosenCardSuit}.png")
+                currentBotHand.append(resultingCard) 
+
+                if situation == 2: 
+                    currentBotHand.append(targetInCurrentBotHand) 
+                elif situation == 3: 
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                elif situation == 4:
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                    currentBotHand.append(targetInCurrentBotHand)
+                    
+                newCardCreated = True
+                break
+
+    if not newCardCreated and situation == 2: 
+        currentBotHand.append(targetInCurrentBotHand) 
+        
+        
+    elif not newCardCreated and situation == 3:
+        currentBotHand.append(targetInCurrentBotHand)
+        currentBotHand.append(targetInCurrentBotHand)
+
+    return newCardCreated
+
+def TryCombiningIntoThreeOfAKind(botHandValues, valueOfPairOrKind):
+    
+    newCardCreated = False
+
+    currentBotHand = allBotHands[whoseTurn - 1]
+    print(f"before removing target trying to combine into 3 of a kind: {botHandValues}\n current bot hand {currentBotHand}")
+    target = valueOfPairOrKind 
+
+    if len(communityHand) == 3:
+
+        if (botHandValues[0] == target and botHandValues[1] == target): 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            situation = 1
+
+        elif (botHandValues[1] == target and botHandValues[2] == target): 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            situation = 1
+
+        elif (botHandValues[0] == target and botHandValues[2] == target): 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            situation = 1
+
+        elif botHandValues.index(target) == 0 or botHandValues.index(target) == 1 or botHandValues.index(target) == 2: 
+            
+            botHandValues.remove(target) 
+            botHandValues.pop(0) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target) - 1] 
+            currentBotHand.pop(botHandValues.index(target) - 1) 
+            botHandValues.remove(target) 
+            botHandValues.pop(0) 
+            situation = 2
+
+        elif botHandValues.index(target) > 1: 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
+            currentBotHand.pop(botHandValues.index(target)) 
+            currentBotHand.pop(botHandValues.index(target)) 
+            botHandValues.remove(target) 
+            botHandValues.remove(target) 
+            situation = 3
+
+    elif len(communityHand) == 2:
+
+        if botHandValues[0] == target and botHandValues[1] == target: 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            situation = 1
+
+        elif botHandValues.index(target) == 0 or botHandValues.index(target) == 1: 
+            botHandValues.remove(target) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target) - 1] 
+            currentBotHand.pop(botHandValues.index(target) - 1) 
+            botHandValues.remove(target) 
+            botHandValues.pop(0) 
+            situation = 2
+
+        elif botHandValues.index(target) > 1: 
+            botHandValues.pop(0) 
+            botHandValues.pop(0) 
+            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
+            currentBotHand.pop(botHandValues.index(target)) 
+            currentBotHand.pop(botHandValues.index(target)) 
+            botHandValues.remove(target) 
+            botHandValues.remove(target) 
+            situation = 3
+
+    print(f"situation: {situation}. after removing target trying to combine into 3 of a kind: {botHandValues}\n current bot hand {currentBotHand}")
+
+    for index in range(len(botHandValues)): 
+        firstChosenCard = currentBotHand[index - 1] 
+        secondChosenCard = currentBotHand[index] 
+
+        print(botHandValues[index - 1], botHandValues[index], index)
+        
+        if botHandValues[index - 1] + botHandValues[index] == target: 
+
+            firstChosenCardSuit, secondChosenCardSuit = GetSuitOfCardOneAndTwo(firstChosenCard, secondChosenCard)
+
+            print(f"{botHandValues[index - 1]} of {firstChosenCardSuit} + {botHandValues[index]} of {secondChosenCardSuit} = {target}")
+
+            if botHandValues[index - 1] >= botHandValues[index]: 
+                print(f"{target}_of_{firstChosenCardSuit}.png = resulting card") 
+                resultingCard = f"{target}_of_{firstChosenCardSuit}.png"
+
+                print(f"{botHandValues[index - 1]}_of_{firstChosenCardSuit}.png")
+
+                currentBotHand.remove(f"{botHandValues[index - 1]}_of_{firstChosenCardSuit}.png")
+                currentBotHand.remove(f"{botHandValues[index]}_of_{secondChosenCardSuit}.png")
+                currentBotHand.append(resultingCard)  
