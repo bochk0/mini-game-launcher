@@ -1298,3 +1298,215 @@ def DecideWhichCombinationToMake(tempList, FrScrollableText):
         UpdateFeedback("tried to combine", FrScrollableText, False, isNewCardCreated)
     except:
         UpdateFeedback("tried to combine", FrScrollableText, False, False)
+
+    def MakeBotCombine(FrScrollableText):
+
+    tempList = communityHand.copy() 
+
+    for card in range(len(allBotHands[whoseTurn - 1])):
+        tempList.append(allBotHands[whoseTurn - 1][card]) 
+
+    if len(allBotHands[whoseTurn - 1]) > 0: 
+        DecideWhichCombinationToMake(tempList, FrScrollableText)
+
+    tempList.clear()
+
+    print(f"bot: {whoseTurn} combination over")
+    IncreaseWhoseTurn()
+
+def ShowAllBotAndCommunityCards(FrTableScreen):
+    
+    TxBotOneCardOne = Label(FrTableScreen, borderwidth=0)
+    TxBotOneCardOne.place(x=70,y=50)
+    TxBotOneCardTwo = Label(FrTableScreen, borderwidth=0)
+    TxBotOneCardTwo.place(x=110,y=50)
+    TxBotOneCardThree = Label(FrTableScreen, borderwidth=0)
+    TxBotOneCardThree.place(x=150,y=50)
+    TxBotOneCardFour = Label(FrTableScreen, borderwidth=0)
+    TxBotOneCardFour.place(x=190,y=50)
+    TxBotOneCardFive = Label(FrTableScreen, borderwidth=0)
+    TxBotOneCardFive.place(x=230,y=50)
+
+    TxBotTwoCardOne = Label(FrTableScreen, borderwidth=0)
+    TxBotTwoCardOne.place(x=70,y=175)
+    TxBotTwoCardTwo = Label(FrTableScreen, borderwidth=0)
+    TxBotTwoCardTwo.place(x=110,y=175)
+    TxBotTwoCardThree = Label(FrTableScreen, borderwidth=0)
+    TxBotTwoCardThree.place(x=150,y=175)
+    TxBotTwoCardFour = Label(FrTableScreen, borderwidth=0)
+    TxBotTwoCardFour.place(x=190,y=175)
+    TxBotTwoCardFive = Label(FrTableScreen, borderwidth=0)
+    TxBotTwoCardFive.place(x=230,y=175)
+
+    TxBotThreeCardOne = Label(FrTableScreen, borderwidth=0)
+    TxBotThreeCardOne.place(x=70,y=300)
+    TxBotThreeCardTwo = Label(FrTableScreen, borderwidth=0)
+    TxBotThreeCardTwo.place(x=110,y=300)
+    TxBotThreeCardThree = Label(FrTableScreen, borderwidth=0)
+    TxBotThreeCardThree.place(x=150,y=300)
+    TxBotThreeCardFour = Label(FrTableScreen, borderwidth=0)
+    TxBotThreeCardFour.place(x=190,y=300)
+    TxBotThreeCardFive = Label(FrTableScreen, borderwidth=0)
+    TxBotThreeCardFive.place(x=230,y=300)
+
+    botOneCards = [TxBotOneCardOne, TxBotOneCardTwo, TxBotOneCardThree, TxBotOneCardFour, TxBotOneCardFive]
+    botTwoCards = [TxBotTwoCardOne, TxBotTwoCardTwo, TxBotTwoCardThree, TxBotTwoCardFour, TxBotTwoCardFive]
+    botThreeCards = [TxBotThreeCardOne, TxBotThreeCardTwo, TxBotThreeCardThree, TxBotThreeCardFour, TxBotThreeCardFive]
+    allBotCards = [botOneCards, botTwoCards, botThreeCards]
+
+    for bot in range(3):
+        for card in range(len(allBotHands[bot])): 
+            
+            cardImageFile = Image.open(f"Playing Cards/{allBotHands[bot][card]}")
+            resizedCardImageFile = cardImageFile.resize((76, 109), Image.LANCZOS)
+            actualCardImage = ImageTk.PhotoImage(resizedCardImageFile)
+            allBotCards[bot][card].image = actualCardImage
+            allBotCards[bot][card].config(image=actualCardImage)
+
+    TxCommunityCardOne = Label(FrTableScreen, borderwidth=0)
+    TxCommunityCardOne.place(x=505,y=50)
+
+    TxCommunityCardTwo = Label(FrTableScreen, borderwidth=0)
+    TxCommunityCardTwo.place(x=545,y=50)
+
+    TxCommunityCardThree = Label(FrTableScreen, borderwidth=0)
+    TxCommunityCardThree.place(x=595,y=50)
+
+    allCommunityCards = [TxCommunityCardOne, TxCommunityCardTwo, TxCommunityCardThree]
+
+    for card in range(3): 
+        
+        cardImageFile = Image.open(f"Playing Cards/{communityHand[card]}")
+        resizedCardImageFile = cardImageFile.resize((76, 109), Image.LANCZOS)
+        actualCardImage = ImageTk.PhotoImage(resizedCardImageFile)
+        allCommunityCards[card].image = actualCardImage
+        allCommunityCards[card].config(image=actualCardImage)
+
+def GetResultOfGame():
+
+    UpdateBotHandStrengthsList()
+    
+    winOrLoseList = [] 
+
+    for bot in range(3):
+
+        if (type(playerHandStrength) == tuple) and (type(botHandsStrengths[bot]) == tuple):
+            if (playerHandStrength[0] > botHandsStrengths[bot][0]): 
+                winOrLose = "win"
+                winOrLoseList.append(winOrLose)
+            elif (playerHandStrength[0] == botHandsStrengths[bot][0]): 
+                if (playerHandStrength[1] > botHandsStrengths[bot][1]): 
+                    winOrLose = "win"
+                elif (playerHandStrength[1] == botHandsStrengths[bot][1]): 
+                    winOrLose = "tie"
+                elif (playerHandStrength[1] < botHandsStrengths[bot][1]): 
+                    winOrLose = "lose"
+                winOrLoseList.append(winOrLose)
+            elif (playerHandStrength[0] < botHandsStrengths[bot][0]): 
+                winOrLose = "lose"
+                winOrLoseList.append(winOrLose)
+        
+        if (type(playerHandStrength) == tuple) and (type(botHandsStrengths[bot]) == int):
+            if (playerHandStrength[0] > botHandsStrengths[bot]):
+                winOrLose = "win"
+            elif (playerHandStrength[0] == botHandsStrengths[bot]):
+                winOrLose = "tie"
+            elif (playerHandStrength[0] < botHandsStrengths[bot]):
+                winOrLose = "lose"
+            winOrLoseList.append(winOrLose)
+
+        if (type(playerHandStrength) == int) and (type(botHandsStrengths[bot]) == tuple):
+            if (playerHandStrength > botHandsStrengths[bot][0]): 
+                winOrLose = "win"
+            elif (playerHandStrength < botHandsStrengths[bot][0]): 
+                winOrLose = "lose"
+            winOrLoseList.append(winOrLose)
+
+        if (type(playerHandStrength) == int) and (type(botHandsStrengths[bot]) == int):
+            if (playerHandStrength > botHandsStrengths[bot]):
+                winOrLose = "win"
+            elif (playerHandStrength == botHandsStrengths[bot]):
+                winOrLose = "tie"
+            elif (playerHandStrength < botHandsStrengths[bot]):
+                winOrLose = "lose"
+            winOrLoseList.append(winOrLose)
+
+    if "lose" in winOrLoseList:
+        winOrLose = f"You lost :["
+    elif "tie" in winOrLoseList:
+        winOrLose = f"You tied and won {pot/2} coins! :|"
+    elif "win" in winOrLoseList:
+        winOrLose = f"You won {pot} coins! :]"
+    
+    return winOrLose
+
+
+def ExecuteRoundEleven(FrTableScreen):
+    
+    ClearWindowOrFrame(FrTableScreen)
+    DisplayCurrentRoundInstruction(FrTableScreen, False)
+
+    BtRaise["state"] = "disabled"
+    BtCall["state"] = "disabled"
+    BtCheck["state"] = "disabled"
+    BtCombine["state"] = "disabled"
+    BtFold["state"] = "disabled"
+
+    TxbotOne = Label(FrTableScreen, text="Bot 1", font=("Rockwell", 16), background="light grey")
+    TxbotOne.place(x=10,y=50)
+    TxbotTwo = Label(FrTableScreen, text="Bot 2", font=("Rockwell", 16), background="light grey")
+    TxbotTwo.place(x=10,y=175)
+    TxbotThree = Label(FrTableScreen, text="Bot 3", font=("Rockwell", 16), background="light grey")
+    TxbotThree.place(x=10,y=300)
+    TxCommunityHand = Label(FrTableScreen, text="Community cards", font=("Rockwell", 16), background="light grey")
+    TxCommunityHand.place(x=320,y=50)
+
+    PrintAllHands()
+    ShowAllBotAndCommunityCards(FrTableScreen)
+
+    winOrLose = GetResultOfGame()
+    TxWinOrLose = Label(FrTableScreen, text=winOrLose, font=("Rockwell", 16), background="light grey")
+    TxWinOrLose.place(x=10,y=420)
+
+    UpdateAccStatsDB(winOrLose)
+
+    BtLeave = Button(FrTableScreen, text="LEAVE\nGAME", font=("Rockwell", 16), borderwidth=0,
+                    background="light grey", compound="c", image=pixel, height=70, width=70,
+                    command=lambda:Leave())
+    BtLeave.place(x=720,y=420)
+
+def ExecuteRoundTen(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList):
+    global firstTimeExecutingRoundTen, numOfPlayersMadeBetInThisRound, roundTenExecuted, previousRoundLastBet
+    
+
+    if firstTimeExecutingRoundTen: 
+        numOfPlayersMadeBetInThisRound = 0
+        BtRaise["state"] = "disabled"
+        BtCall["state"] = "disabled"
+        BtCheck["state"] = "disabled"
+        BtCombine["state"] = "disabled"
+        BtCombine.config(width=229) 
+        BtFold["state"] = "normal" 
+        BtContinue.destroy() 
+        firstTimeExecutingRoundTen = False
+
+    if whoseTurn != 0: 
+        MakeBotBet(TxPot, FrScrollableText) 
+        numOfPlayersMadeBetInThisRound += 1
+
+    if whoseTurn == 0 and numOfPlayersMadeBetInThisRound != 4:
+        playerCoins = GetPlayerCoins()
+        if lastBet <= playerCoins:
+            BtCall["state"] = "normal"
+            BtRaise["state"] = "normal"
+        if previousRoundLastBet == lastBet:
+            BtCheck["state"] = "normal"
+        DisplayCurrentRoundInstruction(FrTableScreen, True) 
+        numOfPlayersMadeBetInThisRound += 1
+        main.wait_variable(playerMadeDecision) 
+
+    if numOfPlayersMadeBetInThisRound != 4 and whoseTurn != 0: 
+        ExecuteRoundTen(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList) 
+    elif numOfPlayersMadeBetInThisRound == 4: 
+        previousRoundLastBet = lastBet
+        roundTenExecuted = True
