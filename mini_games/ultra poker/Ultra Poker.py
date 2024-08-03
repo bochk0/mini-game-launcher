@@ -2384,18 +2384,7 @@ def RegisterUser(EnUsername, EnPassword, EnConfirmPassword, BtBack, BtRegisterAc
 
         record.append(username)
         record.append(password)
-
-        if not usernamesMatch:
-            cursor.execute("INSERT INTO tblAccounts VALUES (?,?)", record)
-            con.commit()
-            star = "*"
-            print("""
-            Account CREATED.
-            Username: '""" + username + """'.
-            Password: '""" + star*len(password) + """'.
-            """)
-            record = []
-            AccountCreatedMessage(BtBack, BtRegisterAccount)
+        
     else:
         print("password and confirm password doesn't match")
 
@@ -2450,3 +2439,283 @@ def UpdateAccStatsDB(wonOrLost):
         con.commit()
 
     cursor.close()
+
+    def CheckAccStatsDB():
+
+    
+    statsDbName = (f"Stats({accountUsername}).db")
+    
+    if isfile(statsDbName):
+        print("\n----------------------------------\n")
+        print(f"'{statsDbName}' DATABASE EXISTS.")
+        print("\n----------------------------------\n")
+
+    else:
+        print(f"\nNO DATABASE FOUND.\n CREATING '{statsDbName}' DATABASE.")
+        con = sqlite3.connect(f"{statsDbName}")
+        cursor = con.cursor()
+        cursor.execute("""
+            CREATE TABLE tblStats_""" + accountUsername + """
+            (
+            """ + accountUsername + """ STRING,
+            currentMoney INT,
+            handsWon INT,
+            handsLost INT,
+            lifetimeWinnings INT,
+            biggestPotWon INT,
+            primary key (""" + accountUsername + """)
+            )
+            """)
+
+        
+        cursor.execute(f"INSERT INTO tblStats_{accountUsername} (currentMoney,handsWon,handsLost,lifetimeWinnings,biggestPotWon) \
+                                                                VALUES (100000, 0, 0, 0, 0)")
+        con.commit()
+
+def MakeAccountTableDB():
+
+    
+    dbName = ("Accounts.db")
+    if isfile(f"{dbName}"):
+        print("\n'Accounts.db' DATABASE EXISTS.")
+    else:
+        print("NO DATABASE FOUND.\n CREATING 'Accounts.db' DATABASE.")
+        con = sqlite3.connect(f"{dbName}")
+        cursor = con.cursor()
+        cursor.execute("""
+            CREATE TABLE tblAccounts
+            (
+            username STRING,
+            password STRING,
+            primary key (username)
+            )
+            """)
+
+
+def MakeWindowDelAccMenu():
+
+    
+    main.geometry("295x155")
+    
+    TxDelAcc = Label(main, text="DELETE ACCOUNT", font=("Rockwell", 18))
+    TxDelAcc.pack()
+
+    TxUsername = Label(main, text="USERNAME", font=("Rockwell", 18))
+    TxUsername.place(x=5, y=40)
+
+    TxPassword = Label(main, text="PASSWORD", font=("Rockwell", 18))
+    TxPassword.place(x=5, y=80)
+
+    
+    EnUsername = Entry(main, width=22)
+    EnUsername.place(x=150, y=46)
+
+    EnPassword = Entry(main, show="*", width=22)
+    EnPassword.place(x=150, y=87)
+        
+    BtBack = Button(main, text="BACK",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=130,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:DelAccountMenuToAnotherMenu(0))
+    BtBack.place(x=10, y=116)
+
+    BtDelAcc = Button(main, text="DELETE",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=130,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:FindUser(EnUsername, EnPassword, True)) 
+    BtDelAcc.place(x=150, y=116)
+    
+
+def MakeWindowLogInMenu():
+    
+    main.geometry("295x155")
+    
+    
+    TxLogIn = Label(main, text="LOG IN", font=("Rockwell", 18))
+    TxLogIn.pack()
+
+    TxUsername = Label(main, text="USERNAME", font=("Rockwell", 18))
+    TxUsername.place(x=5, y=40)
+
+    TxPassword = Label(main, text="PASSWORD", font=("Rockwell", 18))
+    TxPassword.place(x=5, y=80)
+
+
+    EnUsername = Entry(main, width=22)
+    EnUsername.place(x=150, y=46)
+
+    EnPassword = Entry(main, show="*", width=22)
+    EnPassword.place(x=150, y=87)
+    
+    BtBack = Button(main, text="BACK",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=130,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:LogInMenuToAnotherMenu(0))
+    BtBack.place(x=10, y=116)
+
+    BtLogIn = Button(main, text="LOG IN",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=130,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:[FindUser(EnUsername, EnPassword, False), 
+                                    LoggedIntoAccountMessage(BtLogIn, BtBack)])
+    BtLogIn.place(x=150, y=116)
+    
+
+def MakeWindowRegisterMenu():
+
+    
+    main.geometry("295x228")
+    
+    
+    TxRegister = Label(main, text="REGISTER", font=("Rockwell", 18))
+    TxRegister.pack()
+
+    TxUsername = Label(main, text="USERNAME", font=("Rockwell", 18))
+    TxUsername.place(x=5, y=40)
+
+    TxPassword = Label(main, text="PASSWORD", font=("Rockwell", 18))
+    TxPassword.place(x=5, y=80)
+
+    TxCofirmPassword = Label(main, text="CONFIRM\nPASSWORD", font=("Rockwell", 18))
+    TxCofirmPassword.place(x=5, y=120)
+    
+
+    EnUsername = Entry(main, width=22)
+    EnUsername.place(x=150, y=46)
+
+    EnPassword = Entry(main, show="*", width=22)
+    EnPassword.place(x=150, y=87)
+
+    EnConfirmPassword = Entry(main, show="*", width=22)
+    EnConfirmPassword.place(x=150, y=127)
+
+    BtBack = Button(main, text="BACK",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=130,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:RegisterMenuToAnotherMenu(0))
+    BtBack.place(x=10, y=188)
+
+    BtRegisterAccount = Button(main, text="REGISTER",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=130,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:RegisterUser(EnUsername, EnPassword, EnConfirmPassword, BtBack, BtRegisterAccount))
+    BtRegisterAccount.place(x=150, y=188)
+
+
+def MakeWindowAccountMenu():
+
+    BtLogOut = Button(main)
+    BtLogOut.destroy()
+    BtLogIn = Button(main)
+    BtLogIn.destroy()
+
+    main.geometry("246x197")    
+    
+    TxAccount = Label(main, text="ACCOUNT", font=("Rockwell", 18))
+    TxAccount.pack()
+
+    BtRegister = Button(main, text="REGISTER",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=225,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:AccountMenuToAnotherMenu(1))
+    BtRegister.place(x=8, y=40)
+
+    BtDeleteAccount = Button(main, text="DELETE ACCOUNT",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=225,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:AccountMenuToAnotherMenu(3))
+    BtDeleteAccount.place(x=8, y=120)
+
+    BtBack = Button(main, text="BACK",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=225,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:AccountMenuToAnotherMenu(0))
+    BtBack.place(x=8, y=160)
+
+    if loggedIn:
+        main.geometry("246x227")
+
+        BtLogIn.destroy()
+
+        BtLogOut = Button(main, text="LOG OUT",
+                        font=("Rockwell", 18),
+                        compound="c", image=pixel,
+                        height=25, width=225,
+                        borderwidth=0, bg="light grey",
+                        command=lambda:LogOut(BtLogOut, BtBack, TxLoggedInUser))
+        BtLogOut.place(x=8, y=80)
+
+        
+
+        TxLoggedInUser = Label(main, text=f"Logged into: {accountUsername}", font=("Rockwell", 11))
+        TxLoggedInUser.place(x=8, y=195)
+
+    elif not loggedIn:
+
+        BtLogOut.destroy()
+
+        BtLogIn = Button(main, text="LOG IN",
+                        font=("Rockwell", 18),
+                        compound="c", image=pixel,
+                        height=25, width=225,
+                        borderwidth=0, bg="light grey",
+                        command=lambda:AccountMenuToAnotherMenu(2))
+        BtLogIn.place(x=8, y=80)
+
+
+def MakeWindowMainMenu():
+    
+    main.geometry("200x157")    
+
+    TxMainMenu = Label(main, text="MAIN MENU", font=("Rockwell", 18))
+    TxMainMenu.pack()
+    
+    BtAccount = Button(main, text="ACCOUNT",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=180,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:MainMenuToAnotherMenu(0))
+    BtAccount.place(x=8, y=40)
+
+    BtGame = Button(main, text="GAME",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=180,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:MainMenuToAnotherMenu(1))
+    BtGame.place(x=8, y=80)
+
+    BtExit = Button(main, text="EXIT",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=180,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:MainMenuToAnotherMenu(2))
+    BtExit.place(x=8, y=120)
+    
+
+
+
+cardsList = CreateListOfCards() 
+MakeAccountTableDB() 
+MakeWindowMainMenu() 
+main.mainloop()
