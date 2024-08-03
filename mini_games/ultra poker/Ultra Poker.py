@@ -1111,22 +1111,6 @@ def TryCombiningIntoThreeOfAKind(botHandValues, valueOfPairOrKind):
                 newCardCreated = True
                 break
 
-            elif botHandValues[index - 1] <= botHandValues[index]: 
-                print(f"{target}_of_{secondChosenCardSuit}.png = resulting card") 
-                resultingCard = f"{target}_of_{secondChosenCardSuit}.png"
-
-                currentBotHand.remove(f"{botHandValues[index]}_of_{secondChosenCardSuit}.png")
-                currentBotHand.remove(f"{botHandValues[index-1]}_of_{firstChosenCardSuit}.png")
-                currentBotHand.append(resultingCard) 
-
-                if situation == 2: 
-                    currentBotHand.append(targetInCurrentBotHand) 
-                elif situation == 3: 
-                    currentBotHand.append(targetInCurrentBotHand)
-                    currentBotHand.append(targetInCurrentBotHand)
-
-                newCardCreated = True
-                break
 
     if not newCardCreated and situation == 2: 
         currentBotHand.append(targetInCurrentBotHand) 
@@ -2260,3 +2244,209 @@ def MakeWindowAccountStats():
     TxFeedback = Label(main, text=actualText, font=("Rockwell", 10))
     TxFeedback.place(x=45, y=220)
     UpdateAccountCreatedMessage(counter, TxFeedback, actualText)
+
+    def UpdateAccountCreatedMessage(counter, TxFeedback, actualText):
+    actualText = actualText[0:-4] + str(3-counter) + "..."
+    TxFeedback.config(text=actualText)
+    counter += 1
+    if counter <= 4:
+        
+        main.after(1000, lambda:UpdateAccountCreatedMessage(counter, TxFeedback, actualText))
+    else:
+        TxFeedback.destroy()
+        counter = 0
+        
+        RegisterMenuToAnotherMenu(1)
+
+def LoggedIntoAccountMessage(BtBack, BtLogIn):
+    if loggedIn:
+        main.geometry("295x185")
+        counter = 0
+        BtBack["state"] = "disabled" 
+        BtLogIn["state"] = "disabled" 
+        actualText = "LOGGING INTO ACCOUNT.\nRETURNING TO MAIN MENU IN 3..."
+        TxFeedback = Label(main, text=actualText, font=("Rockwell", 10))
+        TxFeedback.place(x=45, y=145)
+        UpdateLoggedInMessage(counter, TxFeedback, actualText)
+
+def UpdateLoggedInMessage(counter, TxFeedback, actualText):
+    actualText = actualText[0:-4] + str(3-counter) + "..."
+    TxFeedback.config(text=actualText)
+    counter += 1
+    if counter < 5:
+        
+        main.after(1000, lambda:UpdateLoggedInMessage(counter, TxFeedback, actualText))
+    else:
+        TxFeedback.destroy()
+        counter = 0
+        
+        LogInMenuToAnotherMenu(1)
+
+def LogOut(BtLogOut, BtBack, TxLoggedInUser):
+    global loggedIn, accountUsername, accountPassword
+    loggedIn = False
+    accountUsername = ""
+    accountPassword = ""
+
+    BtLogOut.destroy()
+    BtBack.destroy()
+    TxLoggedInUser.destroy()
+    print("LOGGED OUT")
+    AccountMenuToAnotherMenu(0)
+
+def FindUser(EnUsername, EnPassword, delete):
+
+    def DeleteAccount(givenUsername):
+        global loggedIn, accountUsername, accountPassword
+        cursor.execute("DELETE from tblAccounts where username = ?", (givenUsername,)) 
+        con.commit()
+
+        except:
+            print("Account has been DELETED")
+            print("deleted account doesn't have stats db.")
+            
+        loggedIn = False
+        accountUsername = None
+        accountPassword = None
+        cursor.close()
+
+    def LogUserIn(givenUsername, givenPassword):
+        print("Username & Password: MATCH. LOGGED IN.")
+        global loggedIn, accountUsername, accountPassword
+        loggedIn = True
+        accountUsername = givenUsername
+        accountPassword = givenPassword
+        CheckAccStatsDB() 
+
+    givenUsername = EnUsername.get()
+    givenPassword = EnPassword.get()
+
+    con = sqlite3.connect("Accounts.db")
+    cursor = con.cursor()
+    cursor.execute('SELECT * FROM tblAccounts')
+    records = cursor.fetchall()
+
+    tempLoginList = [str(givenUsername), str(givenPassword)]
+    recordsList = []
+
+    for col in records:
+        recordsList.append(col[0])
+        recordsList.append(col[1])
+
+    usernameMatch = False
+    passwordMatch = False
+
+    for x in range(0, len(recordsList)):
+        if tempLoginList[0] == recordsList[x - 1]:
+            usernameMatch = True
+            if usernameMatch == True:
+                y = x
+            if tempLoginList[1] == recordsList[y]:
+                passwordMatch = True
+    print(recordsList)
+    if usernameMatch and passwordMatch:
+        if delete:
+            DeleteAccount(givenUsername)
+        elif not delete:
+            LogUserIn(givenUsername, givenPassword)
+
+    elif not usernameMatch and not passwordMatch:
+        print("\nUsername & Password: DON'T MATCH.")
+
+    cursor.close()
+
+def RegisterUser(EnUsername, EnPassword, EnConfirmPassword, BtBack, BtRegisterAccount):
+    username = EnUsername.get()
+    password = EnPassword.get()
+    confirmPassword = EnConfirmPassword.get()
+
+    if password == confirmPassword:
+        con = sqlite3.connect(f"Accounts.db")
+        cursor = con.cursor()
+        record = []
+        cursor.execute('SELECT * FROM tblAccounts')
+        records = cursor.fetchall()
+        recordsList = []
+
+        usernamesMatch = False
+
+        for col in records:
+            recordsList.append(col[0])
+
+        for x in range(0, len(recordsList)):
+            if username == recordsList[x - 1]:
+                usernamesMatch = True
+
+        if usernamesMatch:
+            print("\n----------------------------------\n")
+            print(f"username: '{username}' ALREADY EXISTS.\n")
+            
+
+        record.append(username)
+        record.append(password)
+
+        if not usernamesMatch:
+            cursor.execute("INSERT INTO tblAccounts VALUES (?,?)", record)
+            con.commit()
+            star = "*"
+            print("""
+            Account CREATED.
+            Username: '""" + username + """'.
+            Password: '""" + star*len(password) + """'.
+            """)
+            record = []
+            AccountCreatedMessage(BtBack, BtRegisterAccount)
+    else:
+        print("password and confirm password doesn't match")
+
+
+def UpdateAccStatsDB(wonOrLost):
+
+    statsDbName = (f"Stats({accountUsername}).db")
+    con = sqlite3.connect(f"{statsDbName}")
+    cursor = con.cursor()
+        
+    if "won" in wonOrLost:
+
+        cursor.execute(f"UPDATE tblStats_{accountUsername} SET currentMoney = currentMoney + {pot}")
+        con.commit()
+
+        cursor.execute(f"UPDATE tblStats_{accountUsername} SET handsWon = handsWon + 1")
+        con.commit()
+
+        cursor.execute(f"UPDATE tblStats_{accountUsername} SET lifetimeWinnings = lifetimeWinnings + {pot}")
+        con.commit()
+
+        
+        cursor.execute(f"SELECT biggestPotWon FROM tblStats_{accountUsername}")
+        for row in cursor:
+            biggestPotWon = row[0]
+
+        
+        if pot > biggestPotWon:
+            cursor.execute(f"UPDATE tblStats_{accountUsername} SET biggestPotWon = {pot}") 
+            con.commit()
+
+    elif "tie" in wonOrLost:
+
+        cursor.execute(f"UPDATE tblStats_{accountUsername} SET currentMoney = currentMoney + {pot/2}")
+        con.commit()
+
+        cursor.execute(f"UPDATE tblStats_{accountUsername} SET lifetimeWinnings = lifetimeWinnings + {pot/2}")
+        con.commit()
+
+        
+        cursor.execute(f"SELECT biggestPotWon FROM tblStats_{accountUsername}")
+        for row in cursor:
+            biggestPotWon = row[0]
+
+        
+        if (pot/2) > biggestPotWon:
+            cursor.execute(f"UPDATE tblStats_{accountUsername} SET biggestPotWon = {pot/2}") 
+            con.commit()
+
+    elif "lost" in wonOrLost:
+        cursor.execute(f"UPDATE tblStats_{accountUsername} SET handsLost = handsLost + 1")
+        con.commit()
+
+    cursor.close()
