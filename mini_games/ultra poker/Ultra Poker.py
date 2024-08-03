@@ -1032,16 +1032,6 @@ def TryCombiningIntoThreeOfAKind(botHandValues, valueOfPairOrKind):
             botHandValues.pop(0) 
             situation = 2
 
-        elif botHandValues.index(target) > 1: 
-            botHandValues.pop(0) 
-            botHandValues.pop(0) 
-            botHandValues.pop(0) 
-            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
-            currentBotHand.pop(botHandValues.index(target)) 
-            currentBotHand.pop(botHandValues.index(target)) 
-            botHandValues.remove(target) 
-            botHandValues.remove(target) 
-            situation = 3
 
     elif len(communityHand) == 2:
 
@@ -1697,3 +1687,204 @@ def ExecuteRoundThree():
     global roundThreeExecuted, botHandsStrengths, communityHand, allBotHands
 
     botHandsStrengths = []
+
+    global roundThreeExecuted, botHandsStrengths, communityHand, allBotHands
+
+    botHandsStrengths = []
+
+    for hand in range(3):
+        botHandStrength = CalculateHandStrength(allBotHands[hand]) 
+        botHandsStrengths.append(botHandStrength) 
+
+
+    roundThreeExecuted = True
+
+def ExecuteRoundTwo(cardButtons):
+    global roundTwoExecuted
+
+
+    for x in range(3): 
+        GeneratePlayerCard(cardButtons) 
+        GenerateCardForAllBots() 
+
+    print("in round two - given 3 cards to all")
+
+    roundTwoExecuted = True
+
+def ExecuteRoundOne(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList):
+    global roundOneExecuted, whoseTurnInRoundOne, firstTimeExecutingRoundOne, numOfBetsMade, previousRoundLastBet, lastBet
+
+    if firstTimeExecutingRoundOne:
+        whoseTurnInRoundOne = whoseTurn
+        numOfBetsMade = 0
+        lastBet = 0
+        previousRoundLastBet = ""
+        firstTimeExecutingRoundOne = False
+
+    if numOfBetsMade < 4 and whoseTurn != 0: 
+        MakeBotBet(TxPot, FrScrollableText) 
+        numOfBetsMade += 1 
+        ExecuteRoundOne(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+
+
+    elif numOfBetsMade < 4 and whoseTurn == 0:
+        BtBetBlind = Button(FrCommandPanel, text="BET BLIND (10 COINS)",
+                            compound="c", image=pixel, height=32, width=229,
+                            font=("Rockwell", 13), borderwidth=0, background="light grey",
+                            command=lambda:[DeductCoinsFromPlayer(10, TxPlayerCoins), 
+                                            UpdatePot(10, TxPot), 
+                                            UpdateFeedback(10, FrScrollableText, False, False), 
+                                            IncreaseWhoseTurn(), 
+                                            ExecuteRoundOne(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)])
+        BtBetBlind.place(x=8,y=8) 
+        numOfBetsMade += 1 
+
+    elif numOfBetsMade == 4:
+        previousRoundLastBet = lastBet
+        roundOneExecuted = True
+        ExecuteGameSequence(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+
+
+def ResetMostGlobalValues():
+    global pot, allBotHands, playerHand, communityHand, numOfCards, currentRound, dealer, whoseTurn, roundOneExecuted, roundTwoExecuted, roundThreeExecuted, roundFourExecuted
+    global roundFiveExecuted, roundSixExecuted, roundSevenExecuted, roundEightExecuted, roundNineExecuted, roundTenExecuted, roundElevenExecuted, cardsList
+
+    pot = 0
+
+    allBotHands = [ [], [], [] ] 
+    playerHand = []
+    communityHand = []
+
+    dealer = random.randint(0,3) 
+    if dealer == 3: 
+        whoseTurn = 0 
+    else: 
+        whoseTurn = dealer + 1 
+
+    currentRound = 1 
+    roundOneExecuted = False 
+    roundTwoExecuted = False
+    roundThreeExecuted = False
+    roundFourExecuted = False
+    roundFiveExecuted = False
+    roundSixExecuted = False
+    roundSevenExecuted = False
+    roundEightExecuted = False
+    roundNineExecuted = False
+    roundTenExecuted = False
+    roundElevenExecuted = False
+
+    numOfCards = 51 
+    cardsList = CreateListOfCards() 
+
+
+def Leave():
+    ResetMostGlobalValues()
+    ClearWindowOrFrame(main)
+    MakeWindowGameMenu()
+
+
+def Fold(FrTableScreen):
+
+    ClearWindowOrFrame(FrTableScreen)
+
+    BtRaise["state"] = "disabled"
+    BtCall["state"] = "disabled"
+    BtCheck["state"] = "disabled"
+    BtCombine["state"] = "disabled"
+    BtFold["state"] = "disabled"
+    try:
+        BtContinue["state"] = "disabled"
+    except:
+        pass
+
+    TxYouFolded = Label(FrTableScreen, text="You folded and lost.", font=("Rockwell", 16))
+    TxYouFolded.place(x=10,y=10)
+
+    UpdateAccStatsDB("lost")
+
+    BtLeave = Button(FrTableScreen, text="LEAVE\nGAME", font=("Rockwell", 16), borderwidth=0,
+                    background="light grey", compound="c", image=pixel, height=70, width=70,
+                    command=lambda:Leave())
+    BtLeave.place(x=10,y=40)
+
+
+def UpdateBotHandStrengthsList():
+    global botHandsStrengths, playerHandStrength
+    botHandsStrengths = []
+
+
+    for bot in range(3):
+        tempList = communityHand.copy() 
+
+        for card in range(len(allBotHands[bot])):
+            tempList.append(allBotHands[bot][card]) 
+
+        botHandStrength = CalculateHandStrength(tempList) 
+        botHandsStrengths.append(botHandStrength) 
+    
+
+    print(f"strengths of all bots: {botHandsStrengths}")
+
+    
+    tempList = communityHand.copy() 
+    for card in range(len(playerHand)):
+        tempList.append(playerHand[card]) 
+    
+    playerHandStrength = CalculateHandStrength(tempList)
+    
+
+def IncreaseWhoseTurn():
+    global whoseTurn 
+   
+    if whoseTurn == 3: 
+        whoseTurn = 0 
+    else: 
+        whoseTurn +=1 
+
+
+def UpdatePot(number, TxPot):
+    global pot 
+
+    pot += int(number) 
+    TxPot.config(text=f"POT: {pot}") 
+
+
+def UpdateFeedback(number, FrScrollableText, fold, combined):
+    if fold: 
+        if whoseTurn != 0: 
+            Label(FrScrollableText, text=f"BOT {whoseTurn} FOLDED", font=("Rockwell", 10)).pack() 
+        else: 
+            Label(FrScrollableText, text=f"{accountUsername} FOLDED", font=("Rockwell", 10)).pack() 
+
+    elif number == 0: 
+        if whoseTurn != 0: 
+            Label(FrScrollableText, text=f"BOT {whoseTurn} CHECKED", font=("Rockwell", 10)).pack() 
+        else: 
+            Label(FrScrollableText, text=f"{accountUsername} CHECKED", font=("Rockwell", 10)).pack() 
+
+    elif not combined and number != "tried to combine": 
+        if whoseTurn != 0: 
+            Label(FrScrollableText, text=f"BOT {whoseTurn} PLACED BET OF {number}", font=("Rockwell", 10)).pack() 
+        else: 
+            Label(FrScrollableText, text=f"{accountUsername} PLACED BET OF {number}", font=("Rockwell", 10)).pack() 
+
+    elif not combined and number == "tried to combine": 
+        if whoseTurn != 0: 
+            Label(FrScrollableText, text=f"BOT {whoseTurn} DIDN'T COMBINE", font=("Rockwell", 10)).pack() 
+        else: 
+            Label(FrScrollableText, text=f"{accountUsername} DIDN'T COMBINE", font=("Rockwell", 10)).pack() 
+
+    elif combined: 
+        if whoseTurn != 0: 
+            Label(FrScrollableText, text=f"BOT {whoseTurn} COMBINED", font=("Rockwell", 10)).pack() 
+        else: 
+            Label(FrScrollableText, text=f"{accountUsername} COMBINED", font=("Rockwell", 10)).pack() 
+
+
+def DisplayCurrentRoundInstruction(FrTableScreen, labelExists):
+    global roundInstruction
+   
+    if not labelExists:
+        roundInstruction = Label(FrTableScreen, text="", font=("Rockwell", 16), background="light grey")
+        roundInstruction.place(x=10,y=10)
