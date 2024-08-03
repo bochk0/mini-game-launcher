@@ -1299,20 +1299,6 @@ def DecideWhichCombinationToMake(tempList, FrScrollableText):
     except:
         UpdateFeedback("tried to combine", FrScrollableText, False, False)
 
-    def MakeBotCombine(FrScrollableText):
-
-    tempList = communityHand.copy() 
-
-    for card in range(len(allBotHands[whoseTurn - 1])):
-        tempList.append(allBotHands[whoseTurn - 1][card]) 
-
-    if len(allBotHands[whoseTurn - 1]) > 0: 
-        DecideWhichCombinationToMake(tempList, FrScrollableText)
-
-    tempList.clear()
-
-    print(f"bot: {whoseTurn} combination over")
-    IncreaseWhoseTurn()
 
 def ShowAllBotAndCommunityCards(FrTableScreen):
     
@@ -1510,3 +1496,204 @@ def ExecuteRoundTen(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelE
     elif numOfPlayersMadeBetInThisRound == 4: 
         previousRoundLastBet = lastBet
         roundTenExecuted = True
+
+def ExecuteRoundNine(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList):
+    global BtContinue, roundNineExecuted, firstTimeExecutingRoundNine, numOfPlayersCombinedInThisRound
+    
+    
+    if firstTimeExecutingRoundNine:
+        BtRaise["state"] = "disabled"
+        BtCall["state"] = "disabled"
+        BtCheck["state"] = "disabled"
+        BtCombine["state"] = "normal"
+
+        BtCombine.config(width=109)
+        
+        BtContinue = Button(FrCommandPanel, text="CONTINUE", font=("Rockwell", 15), borderwidth=0,
+                        background="light grey", compound="c", image=pixel, height=32, width=109,
+                        command=lambda:[ClearWindowOrFrame(FrCommandPanelExtension),
+                        IncreaseWhoseTurn(),
+                        ExecuteRoundNine(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)])
+        BtContinue.place(x=128,y=107)
+
+        numOfPlayersCombinedInThisRound = 0
+        firstTimeExecutingRoundNine = False
+
+    if numOfPlayersCombinedInThisRound == 4: 
+        roundNineExecuted = True
+        ExecuteGameSequence(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+
+    elif numOfPlayersCombinedInThisRound < 4 and whoseTurn == 0: 
+        DisplayCurrentRoundInstruction(FrTableScreen, True) 
+        numOfPlayersCombinedInThisRound += 1
+
+    elif numOfPlayersCombinedInThisRound < 4 and whoseTurn != 0: 
+        MakeBotCombine(FrScrollableText) 
+        numOfPlayersCombinedInThisRound += 1
+        ExecuteRoundNine(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)    
+    
+def ExecuteRoundEight(cardButtons, communityCardList):
+    global roundEightExecuted
+
+    
+
+    GeneratePlayerCard(cardButtons) 
+    GenerateCardForAllBots() 
+    GenerateCommunityCard(communityCardList) 
+
+    print("in round eight - given 5 cards to all")
+
+    roundEightExecuted = True
+
+def ExecuteRoundSeven(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList):
+    global firstTimeExecutingRoundSeven, numOfPlayersMadeBetInThisRound, roundSevenExecuted, previousRoundLastBet
+    
+
+    if firstTimeExecutingRoundSeven: 
+        numOfPlayersMadeBetInThisRound = 0
+        BtRaise["state"] = "disabled"
+        BtCall["state"] = "disabled"
+        BtCheck["state"] = "disabled"
+        BtCombine["state"] = "disabled"
+        BtCombine.config(width=229) 
+        BtFold["state"] = "normal" 
+        BtContinue.destroy() 
+        firstTimeExecutingRoundSeven = False
+
+    if whoseTurn != 0: 
+        MakeBotBet(TxPot, FrScrollableText) 
+        numOfPlayersMadeBetInThisRound += 1
+
+    if whoseTurn == 0 and numOfPlayersMadeBetInThisRound != 4:
+        playerCoins = GetPlayerCoins()
+        if lastBet <= playerCoins:
+            BtCall["state"] = "normal"
+            BtRaise["state"] = "normal"
+        if previousRoundLastBet == lastBet:
+            BtCheck["state"] = "normal"
+        DisplayCurrentRoundInstruction(FrTableScreen, True) 
+        numOfPlayersMadeBetInThisRound += 1
+        main.wait_variable(playerMadeDecision) 
+
+    if numOfPlayersMadeBetInThisRound != 4 and whoseTurn != 0: 
+        ExecuteRoundSeven(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+    elif numOfPlayersMadeBetInThisRound == 4: 
+        previousRoundLastBet = lastBet
+        roundSevenExecuted = True
+
+def ExecuteRoundSix(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList):
+    
+
+    global BtContinue, roundSixExecuted, firstTimeExecutingRoundSix, numOfPlayersCombinedInThisRound
+
+    if firstTimeExecutingRoundSix:
+        BtRaise["state"] = "disabled"
+        BtCall["state"] = "disabled"
+        BtCheck["state"] = "disabled"
+        BtCombine["state"] = "normal"
+
+        BtCombine.config(width=109)
+        
+        BtContinue = Button(FrCommandPanel, text="CONTINUE", font=("Rockwell", 15), borderwidth=0,
+                        background="light grey", compound="c", image=pixel, height=32, width=109,
+                        command=lambda:[ClearWindowOrFrame(FrCommandPanelExtension),
+                        UpdateFeedback("tried to combine", FrScrollableText, False, False),
+                        IncreaseWhoseTurn(),
+                        ExecuteRoundSix(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)])
+        BtContinue.place(x=128,y=107)
+
+        numOfPlayersCombinedInThisRound = 0
+        firstTimeExecutingRoundSix = False
+
+    if numOfPlayersCombinedInThisRound == 4: 
+        roundSixExecuted = True
+        ExecuteGameSequence(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+
+    elif numOfPlayersCombinedInThisRound < 4 and whoseTurn == 0: 
+        DisplayCurrentRoundInstruction(FrTableScreen, True) 
+        numOfPlayersCombinedInThisRound += 1
+
+    elif numOfPlayersCombinedInThisRound < 4 and whoseTurn != 0: 
+        
+        MakeBotCombine(FrScrollableText) 
+        numOfPlayersCombinedInThisRound += 1
+        ExecuteRoundSix(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)    
+    
+def ExecuteRoundFive(cardButtons, communityCardList):
+    global roundFiveExecuted, communityHand
+    
+
+    GeneratePlayerCard(cardButtons) 
+    GenerateCardForAllBots() 
+    GenerateCommunityCard(communityCardList) 
+    GenerateCommunityCard(communityCardList) 
+
+    print("in round five - given 4 cards to all, 2 comm cards")
+    PrintAllHands()
+
+    roundFiveExecuted = True
+
+def ExecuteRoundFour(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList):
+    global firstTimeExecutingRoundFour, numOfPlayersMadeBetInThisRound, roundFourExecuted, BtRaise, BtCall, BtCheck, BtCombine, BtFold, previousRoundLastBet
+
+    
+
+    if firstTimeExecutingRoundFour:
+
+        BtRaise = Button(FrCommandPanel, text="RAISE", font=("Rockwell", 15), borderwidth=0,
+                        background="light grey", compound="c", image=pixel, height=32, width=229,
+                        command=lambda:ShowRaiseMenu(TxPlayerCoins, TxPot, FrScrollableText, FrCommandPanelExtension))
+        BtRaise.place(x=8,y=8)
+
+        BtCall = Button(FrCommandPanel, text="CALL", font=("Rockwell", 15), borderwidth=0,
+                        background="light grey", compound="c", image=pixel, height=32, width=109,
+                        command=lambda:Call(TxPlayerCoins, TxPot, FrScrollableText, BtCall)) 
+        BtCall.place(x=8,y=57)
+
+        BtCheck = Button(FrCommandPanel, text="CHECK", font=("Rockwell", 15), borderwidth=0,
+                        background="light grey", compound="c", image=pixel, height=32, width=109,
+                        command=lambda:Check(FrScrollableText))
+        BtCheck.place(x=128,y=57)
+
+        BtCombine = Button(FrCommandPanel, text="COMBINE", font=("Rockwell", 15), borderwidth=0,
+                            background="light grey", compound="c", image=pixel, height=32, width=229,
+                            command=lambda:ShowCombineMenu(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList))
+        BtCombine.place(x=8, y=107)
+
+        BtFold = Button(FrCommandPanel, text="FOLD", font=("Rockwell", 15), borderwidth=0,
+                        background="light grey", compound="c", image=pixel, height=32, width=229,
+                        command=lambda:Fold(FrTableScreen))
+        BtFold.place(x=8,y=156)
+
+        BtCombine["state"] = "disabled"
+        BtCheck["state"] = "disabled"
+
+        numOfPlayersMadeBetInThisRound = 0
+        firstTimeExecutingRoundFour = False 
+
+    if whoseTurn != 0: 
+        MakeBotBet(TxPot, FrScrollableText) 
+        numOfPlayersMadeBetInThisRound += 1
+
+    if whoseTurn == 0 and numOfPlayersMadeBetInThisRound != 4: 
+        playerCoins = GetPlayerCoins()
+        if lastBet <= playerCoins:
+            BtCall["state"] = "normal"
+            BtRaise["state"] = "normal"
+        if previousRoundLastBet == lastBet:
+            BtCheck["state"] = "normal"
+
+        DisplayCurrentRoundInstruction(FrTableScreen, True) 
+        numOfPlayersMadeBetInThisRound += 1
+        main.wait_variable(playerMadeDecision) 
+
+    if numOfPlayersMadeBetInThisRound != 4 and whoseTurn != 0: 
+        ExecuteRoundFour(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+    elif numOfPlayersMadeBetInThisRound == 4: 
+        previousRoundLastBet = lastBet
+        roundFourExecuted = True
+
+def ExecuteRoundThree():
+    global roundThreeExecuted, botHandsStrengths, communityHand, allBotHands
+
+    botHandsStrengths = []
