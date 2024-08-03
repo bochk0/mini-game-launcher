@@ -844,15 +844,6 @@ def TryCombiningIntoFourOfAKind(botHandValues, valueOfPairOrKind):
             botHandValues.remove(target) 
             situation = 2
 
-        elif (botHandValues[0] == target and botHandValues[2] == target): 
-            botHandValues.pop(0) 
-            botHandValues.pop(0) 
-            botHandValues.pop(0) 
-            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
-            currentBotHand.pop(botHandValues.index(target)) 
-            botHandValues.remove(target) 
-            situation = 2
-
         elif botHandValues.index(target) == 0 or botHandValues.index(target) == 1 or botHandValues.index(target) == 2: 
             
             botHandValues.pop(0) 
@@ -1888,3 +1879,200 @@ def DisplayCurrentRoundInstruction(FrTableScreen, labelExists):
     if not labelExists:
         roundInstruction = Label(FrTableScreen, text="", font=("Rockwell", 16), background="light grey")
         roundInstruction.place(x=10,y=10)
+
+    if whoseTurn == 0: 
+        if currentRound == 1:
+            roundInstruction.config(text="First round of betting")
+
+        elif currentRound == 4:
+            roundInstruction.config(text="Second round of betting")
+
+        elif currentRound == 6:
+            roundInstruction.config(text="First combination round")
+
+        elif currentRound == 7:
+            roundInstruction.config(text="Third round of betting")
+
+        elif currentRound == 9:
+            roundInstruction.config(text="Second combination round")
+
+        elif currentRound == 10:
+            roundInstruction.config(text="Fourth round of betting")
+
+    if currentRound == 11:
+        roundInstruction.config(text="Showdown")
+
+
+def ExecuteGameSequence(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList):
+    global currentRound, firstTimeExecutingRoundOne, firstTimeExecutingRoundFour, firstTimeExecutingRoundSix, firstTimeExecutingRoundSeven, firstTimeExecutingRoundNine, firstTimeExecutingRoundTen
+
+    if currentRound == 1: 
+        firstTimeExecutingRoundOne = True
+        if not roundOneExecuted:
+            DisplayCurrentRoundInstruction(FrTableScreen, False)
+            print("start of 'if not' roundOneExecuted:", roundOneExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundOne(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+            print("end of 'if not' roundOneExecuted:", roundOneExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundOneExecuted:
+            print("start of 'if' roundOneExecuted:", roundOneExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1 
+            print("end of 'if' roundOneExecuted:", roundOneExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+
+    if currentRound == 2: 
+        if not roundTwoExecuted:
+            print("start of 'if not' roundTwoExecuted:", roundTwoExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundTwo(cardButtons)
+            print("end of 'if not' roundTwoExecuted:", roundTwoExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundTwoExecuted:
+            print("start of 'if' roundTwoExecuted:", roundTwoExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1
+            print("end of 'if' roundTwoExecuted:", roundTwoExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+           
+    if currentRound == 3: 
+        if not roundThreeExecuted:
+            print("start of 'if not' roundThreeExecuted:", roundThreeExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundThree()
+            print("end of 'if not' roundThreeExecuted:", roundThreeExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundThreeExecuted:
+            print("start of 'if' roundThreeExecuted:", roundThreeExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1
+            print("end of 'if' roundThreeExecuted:", roundThreeExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+   
+    if currentRound == 4: 
+        firstTimeExecutingRoundFour = True
+        if not roundFourExecuted:
+            DisplayCurrentRoundInstruction(FrTableScreen, True)
+            print("start of 'if not' roundFourExecuted:", roundFourExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundFour(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+            print("end of 'if not' roundFourExecuted:", roundFourExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundFourExecuted:
+            print("start of 'if' roundFourExecuted:", roundFourExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1
+            playerMadeDecision.set(False)
+            print("end of 'if' roundFourExecuted:", roundFourExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+   
+    if currentRound == 5: 
+        if not roundFiveExecuted:
+            print("start of 'if not' roundFiveExecuted:", roundFiveExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundFive(cardButtons, communityCardList)
+            print("end of 'if not' roundFiveExecuted:", roundFiveExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundFiveExecuted:
+            print("start of 'if' roundFiveExecuted:", roundFiveExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1
+            print("end of 'if' roundFiveExecuted:", roundFiveExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+   
+    if currentRound == 6: 
+        firstTimeExecutingRoundSix = True
+        if not roundSixExecuted:
+            DisplayCurrentRoundInstruction(FrTableScreen, True)
+            print("start of 'if not' roundSixExecuted:", roundSixExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundSix(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+            print("end of 'if not' roundSixExecuted:", roundSixExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundSixExecuted:
+            print("start of 'if' roundSixExecuted:", roundSixExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1
+            print("end of 'if' roundSixExecuted:", roundSixExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+
+    if currentRound == 7: 
+        firstTimeExecutingRoundSeven = True
+        if not roundSevenExecuted:
+            DisplayCurrentRoundInstruction(FrTableScreen, True)
+            print("start of 'if not' roundSevenExecuted:", roundSevenExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundSeven(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+            print("end of 'if not' roundSevenExecuted:", roundSevenExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundSevenExecuted:
+            print("start of 'if' roundSevenExecuted:", roundSevenExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1
+            playerMadeDecision.set(False)
+            print("end of 'if' roundSevenExecuted:", roundSevenExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+
+    if currentRound == 8: 
+        if not roundEightExecuted:
+            print("start of 'if not' roundEightExecuted:", roundEightExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundEight(cardButtons, communityCardList)
+            print("end of 'if not' roundEightExecuted:", roundEightExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundEightExecuted:
+            print("start of 'if' roundEightExecuted:", roundEightExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1
+            print("end of 'if' roundEightExecuted:", roundEightExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+   
+    if currentRound == 9: 
+        firstTimeExecutingRoundNine = True
+        if not roundNineExecuted:
+            DisplayCurrentRoundInstruction(FrTableScreen, True)
+            print("start of 'if not' roundNineExecuted:", roundNineExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundNine(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+            print("end of 'if not' roundNineExecuted:", roundNineExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundNineExecuted:
+            print("start of 'if' roundNineExecuted:", roundNineExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1
+            print("end of 'if' roundNineExecuted:", roundNineExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+   
+    if currentRound == 10: 
+        firstTimeExecutingRoundTen = True
+        if not roundTenExecuted:
+            DisplayCurrentRoundInstruction(FrTableScreen, True)
+            print("start of 'if not' roundTenExecuted:", roundTenExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundTen(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+            print("end of 'if not' roundTenExecuted:", roundTenExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundTenExecuted:
+            print("start of 'if' roundTenExecuted:", roundTenExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1
+            print("end of 'if' roundTenExecuted:", roundTenExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+
+    if currentRound == 11: 
+        if not roundElevenExecuted:
+            DisplayCurrentRoundInstruction(FrTableScreen, True)
+            print("start of 'if not' roundElevenExecuted:", roundElevenExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            ExecuteRoundEleven(FrTableScreen)
+            print("end of 'if not' roundElevenExecuted:", roundElevenExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+        if roundElevenExecuted:
+            print("start of 'if' roundElevenExecuted:", roundElevenExecuted, "current round:", currentRound, "whose turn:", whoseTurn)
+            currentRound += 1
+            print("end of 'if' roundElevenExecuted:", roundElevenExecuted, "current round:", currentRound, "whose turn:", whoseTurn, "\n")
+
+
+def MakeWindowGame():
+
+    
+    main.geometry("1050x700+480+200") 
+    
+    
+    FrCardScreen = Frame(main, background="dark grey", width=800, height=200)
+    FrCardScreen.place(x=0, y=500)
+
+    FrTableScreen = Frame(main, width=800, height=500)
+    FrTableScreen.place(x=0, y=0)
+
+    FrCommandPanel = Frame(main, background="grey", width=250, height=200)
+    FrCommandPanel.place(x=800, y=500)
+
+    FrGameFeedback = Frame(main, width=250, height=500)
+    FrGameFeedback.place(x=800, y=0)
+
+    FrCommandPanelExtension = Frame(main, background="dark grey", width=135, height=200)
+    FrCommandPanelExtension.place(x=665, y=500)
+    
+    
+    CaTableScreen = Canvas(FrTableScreen, background="light grey", width=800, height=500)
+    CaTableScreen.place(x=0, y=0)
+
+    CaTableScreen.create_rectangle(100, 100, 700, 400,
+                                outline="black", fill="dark green",
+                                width=2)
+
+    CaTableScreen.create_rectangle(50, 150, 100, 350,
+                                outline="black", fill="
+                                width=2)
+
+    CaTableScreen.create_rectangle(300, 50, 500, 100,
+                                outline="black", fill="
+                                width=2)
+
+    CaTableScreen.create_rectangle(700, 150, 750, 350,
+                                outline="black", fill="
+                                width=2)
+
+    CaTableScreen.create_rectangle(300, 400, 500, 450,
+                                outline="black", fill="
+                                width=2)
