@@ -1039,16 +1039,6 @@ def TryCombiningIntoThreeOfAKind(botHandValues, valueOfPairOrKind):
             botHandValues.pop(0) 
             situation = 2
 
-        elif botHandValues.index(target) > 1: 
-            botHandValues.pop(0) 
-            botHandValues.pop(0) 
-            targetInCurrentBotHand = currentBotHand[botHandValues.index(target)] 
-            currentBotHand.pop(botHandValues.index(target)) 
-            currentBotHand.pop(botHandValues.index(target)) 
-            botHandValues.remove(target) 
-            botHandValues.remove(target) 
-            situation = 3
-
     print(f"situation: {situation}. after removing target trying to combine into 3 of a kind: {botHandValues}\n current bot hand {currentBotHand}")
 
     for index in range(len(botHandValues)): 
@@ -2076,3 +2066,197 @@ def MakeWindowGame():
     CaTableScreen.create_rectangle(300, 400, 500, 450,
                                 outline="black", fill="
                                 width=2)
+
+    TxBot1Name = Label(FrTableScreen, text="BOT 1", font=("Rockwell", 10), background="
+    TxBot1Name.place(x=55,y=240)
+
+    TxBot2Name = Label(FrTableScreen, text="BOT 2", font=("Rockwell", 10), background="
+    TxBot2Name.place(x=380,y=65)
+
+    TxBot3Name = Label(FrTableScreen, text="BOT 3", font=("Rockwell", 10), background="
+    TxBot3Name.place(x=705,y=240)
+
+    TxPlayerName = Label(FrTableScreen, text=accountUsername, font=("Rockwell", 10), background="
+    TxPlayerName.place(x=380,y=412)
+
+    playerCoins = GetPlayerCoins()
+    TxPlayerCoins = Label(FrTableScreen, text=accountUsername + "'s coins: " + str(playerCoins), font=("Rockwell", 16), background="light grey")
+    TxPlayerCoins.place(x=297,y=460)
+
+    TxPot = Label(FrTableScreen, text="POT: " + str(pot), font=("Rockwell", 10), background="dark green", foreground="white")
+    TxPot.place(x=380,y=200)
+
+    if dealer == 0:
+        TxDealer = Label(FrTableScreen, text=" D ", font=("Rockwell", 20), background="grey")
+        TxDealer.place(x=247,y=413)
+    elif dealer == 1:
+        TxDealer = Label(FrTableScreen, text=" D ", font=("Rockwell", 20), background="grey")
+        TxDealer.place(x=49,y=364)
+    elif dealer == 2:
+        TxDealer = Label(FrTableScreen, text=" D ", font=("Rockwell", 20), background="grey")
+        TxDealer.place(x=247,y=50)
+    elif dealer == 3:
+        TxDealer = Label(FrTableScreen, text=" D ", font=("Rockwell", 20), background="grey")
+        TxDealer.place(x=711,y=364)
+    
+    
+    BtCardOne = Button(FrCardScreen, borderwidth=0)
+    BtCardOne.place(x=15,y=15)
+
+    BtCardTwo = Button(FrCardScreen, borderwidth=0)
+    BtCardTwo.place(x=145,y=15)
+
+    BtCardThree = Button(FrCardScreen, borderwidth=0)
+    BtCardThree.place(x=275,y=15)
+
+    BtCardFour = Button(FrCardScreen, borderwidth=0)
+    BtCardFour.place(x=405,y=15)
+
+    BtCardFive = Button(FrCardScreen, borderwidth=0)
+    BtCardFive.place(x=535,y=15)
+
+    
+    cardButtons = [BtCardOne, BtCardTwo, BtCardThree, BtCardFour, BtCardFive] 
+
+    
+    TxCommCardOne = Label(FrTableScreen, borderwidth=0)
+    TxCommCardOne.place(x=310,y=230)
+
+    TxCommCardTwo = Label(FrTableScreen, borderwidth=0)
+    TxCommCardTwo.place(x=380,y=230)
+
+    TxCommCardThree = Label(FrTableScreen, borderwidth=0)
+    TxCommCardThree.place(x=450,y=230)
+
+    
+    communityCardList = [TxCommCardOne, TxCommCardTwo, TxCommCardThree] 
+
+    
+    CaGameFeedback = Canvas(FrGameFeedback, width=228, height=496) 
+    scrollBar = Scrollbar(FrGameFeedback, orient="vertical", command=CaGameFeedback.yview) 
+    FrScrollableText = Frame(CaGameFeedback) 
+
+    FrScrollableText.bind("<Configure>", lambda e: CaGameFeedback.configure(scrollregion=CaGameFeedback.bbox("all")))
+    
+    CaGameFeedback.create_window((0, 0), window=FrScrollableText, anchor="nw") 
+    CaGameFeedback.configure(yscrollcommand=scrollBar.set) 
+
+    CaGameFeedback.pack(side=LEFT, fill=BOTH, expand=True)
+    scrollBar.pack(side=RIGHT, fill="y")
+
+    CaGameFeedback.update_idletasks() 
+    CaGameFeedback.yview_moveto(1) 
+    
+    
+    ExecuteGameSequence(FrTableScreen, FrCardScreen, FrCommandPanel, FrCommandPanelExtension, FrScrollableText, TxPlayerCoins, TxPot, cardButtons, communityCardList)
+
+
+def MakeWindowGameMenu():
+
+    
+    main.geometry("215x215")
+    
+    
+    TxGame = Label(main, text="GAME", font=("Rockwell", 18))
+    TxGame.pack()
+
+    
+    BtPlay = Button(main, text="PLAY",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=195,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:GameMenuToAnotherMenu(2))
+    BtPlay.place(x=8, y=33)
+
+    BtViewAccStats = Button(main, text="VIEW ACCOUNT\nSTATISTICS",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=60, width=195,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:GameMenuToAnotherMenu(3))
+    BtViewAccStats.place(x=8, y=70)
+
+    BtHelp = Button(main, text="HELP",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=195,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:GameMenuToAnotherMenu(1))
+    BtHelp.place(x=8, y=142)
+
+    BtBack = Button(main, text="BACK",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=195,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:GameMenuToAnotherMenu(0))
+    BtBack.place(x=8, y=179)
+    
+
+    if not loggedIn: 
+        BtPlay["state"] = "disabled"
+        BtViewAccStats["state"] = "disabled"
+
+
+def MakeWindowAccountStats():
+
+    
+    main.geometry("400x230")
+    
+
+    statsDbName = (f"Stats({accountUsername}).db") 
+    con = sqlite3.connect(statsDbName) 
+    cursor = con.cursor() 
+        
+    
+    cursor.execute(f"SELECT * FROM tblStats_{accountUsername}")
+    records = cursor.fetchall()
+    statsList = []
+
+    for x in range(6):
+        for row in records:
+            statsList.append(row[x])
+    cursor.close()
+    
+    statsList.pop(0) 
+
+    
+    TxStatsTitle = Label(main, text=f"{accountUsername}'s STATISTICS", font=("Rockwell", 18))
+    TxStatsTitle.pack()
+
+    TxCurrentMoney = Label(main, text=f"Current coins: {statsList[0]}", font=("Rockwell", 18))
+    TxCurrentMoney.place(x=10, y=30)
+
+    TxHandsWon = Label(main, text=f"Total hands won: {statsList[1]}", font=("Rockwell", 18))
+    TxHandsWon.place(x=10, y=60)
+
+    TxHandsLost = Label(main, text=f"Total hands lost: {statsList[2]}", font=("Rockwell", 18))
+    TxHandsLost.place(x=10, y=90)
+
+    TxLifetimeWinnings = Label(main, text=f"Lifetime winnings: {statsList[3]}", font=("Rockwell", 18))
+    TxLifetimeWinnings.place(x=10, y=120)
+
+    TxBiggestPotWon = Label(main, text=f"Biggest pot won: {statsList[4]}", font=("Rockwell", 18))
+    TxBiggestPotWon.place(x=10, y=150)
+    
+    
+    BtBack = Button(main, text="BACK",
+                    font=("Rockwell", 18),
+                    compound="c", image=pixel,
+                    height=25, width=375,
+                    borderwidth=0, bg="light grey",
+                    command=lambda:[ClearWindowOrFrame(main),
+                    MakeWindowGameMenu()])
+    BtBack.place(x=10, y=190)
+
+
+    def AccountCreatedMessage(BtBack, BtRegisterAccount):
+    main.geometry("295x258")
+    counter = 0
+    BtBack["state"] = "disabled" 
+    BtRegisterAccount["state"] = "disabled" 
+    actualText = "ACCOUNT CREATED.\nRETURNING TO MAIN MENU IN 3..."
+    TxFeedback = Label(main, text=actualText, font=("Rockwell", 10))
+    TxFeedback.place(x=45, y=220)
+    UpdateAccountCreatedMessage(counter, TxFeedback, actualText)
