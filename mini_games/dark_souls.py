@@ -237,3 +237,208 @@ def guillotine_riddle(player, room, stdscr):
         write_lines(stdscr, "You place the skeleton on the guillotine.\nJust when you begin to pull down on the lever, in a split-second\nyou find yourself in the skeletons place.", 0)
         get_input(stdscr)
         game_over(stdscr)
+
+    def arena_gate(player, room, stdscr):
+    player["coordinates"][1] += 2
+
+def armoury_gate(player, room, stdscr):
+    return
+
+def purification_fountain(player, room, stdscr):
+    with open('./items.json', 'r') as items:
+        items = json.load(items)["weapons"]
+        fixed_weapons = [
+            items["masamune"],
+            items["leonidus_dory"],
+            items["gotz_zweihander"],
+            items["iron_will"]
+        ]
+        for fixed_item in fixed_weapons:
+            if fixed_item in player["inventory"]["weapons"]:
+                return
+        fixable_weapons = [
+            items["dulled_katana"],
+            items["cracked_spear"],
+            items["rusty_zweihander"],
+            items["rusty_dragonslayer"]
+        ]
+        printing_items = ""
+        i = 0
+        for weapon in fixable_weapons:
+            printing_items += (str(i) + " " + weapon["name"] + "\n" if weapon in player["inventory"]["weapons"] else "")
+            i += 1
+        write_lines(stdscr, "Choose which of these weapons you want to purify\n(Choose a specific number)", 0)
+        get_input(stdscr)
+        write_lines(stdscr, printing_items, 0)
+        try:
+            chosen_item = int(get_input(stdscr))
+            if fixable_weapons[chosen_item] in player["inventory"]["weapons"]:
+                del player["inventory"]["weapons"][player["inventory"]["weapons"].index(fixable_weapons[chosen_item])]
+                player["inventory"]["weapons"].append(fixed_weapons[chosen_item])
+                write_lines(stdscr, f"You have purified {fixed_weapons[chosen_item]['name']}", 0)
+                get_input(stdscr)
+                write_lines(stdscr, fixed_weapons[chosen_item]["description"], 0)
+                get_input(stdscr)
+        except:
+            return
+
+def arena_gate_exit(player, room, stdscr):
+        enemies = {
+            "enemies": [ "devil" ]
+        }
+        image = open("./images/enemies/devil.txt", 'r')
+        encounter_won = enemy_encounter(stdscr, player, enemies, image.read())
+        if encounter_won:
+            if player["cursed"]:
+                write_lines(stdscr, "After fighting the devil, his powers -- the powers you've taken in yourself,\novertake you.\nHe laughs, knowing that you're trapped here with him for eternity.", 0)
+                get_input(stdscr)
+                game_over(stdscr)
+            else:
+                write_lines(stdscr, "Finally, after defeating the Devil in his own realm,\nyou're able to enter the surface of Earth", 0)
+                get_input(stdscr)
+                write_lines(stdscr, "The end!", 0)
+                get_input(stdscr)
+                sys.exit(0)
+        else:
+            game_over(stdscr)
+
+
+object_commands = {
+    'open_blue_red_door': open_blue_red_door,
+    'sphinx_riddle': sphinx_riddle,
+    'get_random_paintings': get_random_paintings,
+    'painting_puzzle': painting_puzzle,
+    'chef_statue': chef_statue,
+    'knight_armour': knight_armour,
+    'kitchen_pot': kitchen_pot,
+    'slab_of_meat': slab_of_meat,
+    'warden_gate': warden_gate,
+    'guillotine_riddle': guillotine_riddle,
+    'arena_gate': arena_gate,
+    'armoury_gate': armoury_gate,
+    'purification_fountain': purification_fountain,
+    'arena_gate_exit': arena_gate_exit
+}
+
+
+def retreive_from_save(file, item):
+    with open(f"./s{file}.json") as save:
+        save = json.load(save)
+        return save[item]
+
+def init_colour():
+    curses.start_color()
+    curses.use_default_colors()
+    curses.init_color(curses.COLOR_BLACK, 0, 0, 0)
+    curses.init_color(curses.COLOR_CYAN, 200, 200, 300)
+    curses.init_color(curses.COLOR_RED, 600, 0, 0)
+    curses.init_color(curses.COLOR_BLUE, 0, 0, 500)
+    curses.init_color(curses.COLOR_GREEN, 0, 400, 0)
+    curses.init_color(curses.COLOR_YELLOW, 800, 800, 0)
+    
+    curses.init_color(curses.COLOR_MAGENTA, 1000, 500, 0)
+    colours = [
+        curses.COLOR_WHITE,
+        curses.COLOR_BLACK,
+        curses.COLOR_RED,
+        curses.COLOR_BLUE,
+        curses.COLOR_GREEN,
+        curses.COLOR_MAGENTA,
+        curses.COLOR_YELLOW
+    ]
+    curses.init_pair(1, curses.COLOR_WHITE, -1)
+    for i in range(len(colours)):
+        curses.init_pair(i + 2, colours[i], -1)
+
+def interface(stdscr):
+    rectangle(stdscr, 1, 0, HEIGHT - 11, WIDTH - 2) 
+    rectangle(stdscr, 14, 0, HEIGHT - 5, WIDTH - 2) 
+    rectangle(stdscr, 20, 0, HEIGHT - 2, WIDTH - 2) 
+    stdscr.refresh()
+
+def get_input(stdscr):
+    buffer = ""
+    stdscr.addstr(HEIGHT - 3, 1, " " * (WIDTH - 3))
+    while True:
+        character = stdscr.getch()
+        if character == 10:
+            return buffer.strip()
+        elif character == 263:
+            buffer = buffer[:-1]
+            stdscr.addstr(HEIGHT - 3, len(buffer) + 1, " ")
+        else:
+            buffer += chr(character)
+            stdscr.addstr(HEIGHT - 3, 1, buffer)
+            stdscr.refresh()
+
+def write_lines(stdscr, lines, tbc):
+    x = 0
+    y = 15
+    for i in range(HEIGHT - 20):
+        stdscr.addstr(15 + i, 1, " " * (WIDTH - 3))
+    for character in lines:
+        if character == "\n":
+            y += 1
+            x = 0
+            continue
+        stdscr.addstr(y, x + 1, character)
+        stdscr.refresh()
+        time.sleep(0 if tbc < 0 or DEBUG else 0.05 if tbc == 0 else tbc)
+        x += 1
+
+def print_to_foreground(stdscr, image):
+    colour_match = "wbrlgoy"
+    
+    for i in range(HEIGHT - 13):
+        stdscr.addstr(i + 2, 1, " " * (WIDTH - 3))
+    i = 0
+    current_colour = 1
+    for string in image.split("\n"):
+        k = 0
+        for l in range(len(string)):
+            character = string[l]
+            if character in colour_match:
+                current_colour = colour_match.index(character) + 2
+                continue
+            elif character == "R":
+                current_colour = 1
+                continue
+            stdscr.addstr(i + 2, k + 1, string[l], curses.color_pair(current_colour))
+            k += 1
+        i += 1
+    stdscr.refresh()
+
+def game_over(stdscr):
+    game_over = open("./images/game-over.txt", "r")
+    print_to_foreground(stdscr, game_over.read())
+    get_input(stdscr)
+    sys.exit(0)
+
+def show_stats(stdscr, player):
+    global current_weapon_speed
+    current_weapon_damage = player["current_weapon"]["damage"] if player["current_weapon"] else 0
+    try:
+        current_weapon_speed = player["current_weapon"]["speed"] if player["current_weapon"] else 0
+    except:
+        current_weapon_speed = 0
+    stats_screen = f"""STATS (Press enter to continue)
+HEALTH:   {player["stats"]["health"]}
+STRENGTH: {player["stats"]["damage"] + current_weapon_damage} ({player["stats"]["damage"]} + {current_weapon_damage})
+SPEED:    {player["stats"]["speed"] + current_weapon_speed} ({player["stats"]["speed"]} + {current_weapon_speed})"""
+    write_lines(stdscr, stats_screen, -1)
+    get_input(stdscr)
+
+def enemy_encounter(stdscr, player, enemy_data, image):
+    enemies = []
+    enemies_json = open("./enemies.json", "r")
+    enemies_json = json.load(enemies_json)["enemies"]
+    speeds = []
+    cooldown = 0
+    for enemy in enemy_data["enemies"]:
+        enemies.append(enemies_json[enemy].copy())
+    for enemy in enemies:
+        speeds.append(enemy["speed"])
+    speeds.sort()
+    print_to_foreground(stdscr, image)
+    player_stats = player["stats"].copy()
+    for stat_i in ["damage", "speed"]:
